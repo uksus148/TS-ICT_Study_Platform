@@ -18,16 +18,15 @@ public class UserService {
     }
 
     public User getUserById(Long id) {
-        return userRepository.findById(id).orElse(null);
+        return userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
     public List<User> findAll() {
         return userRepository.findAll();
     }
 
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
-    }
+    public void deleteUser(Long id) { userRepository.deleteById(id); }
 
     public User updateUser(Long id, User newUser) {
         User existing = userRepository.findById(id).orElse(null);

@@ -21,13 +21,13 @@ public class ResourcesController {
    }
 
    @GetMapping("/{id}")
-    public Optional<Resources> findById(@PathVariable Long id) {
+    public Resources findById(@PathVariable Long id) {
        return resourcesService.findById(id);
    }
 
-   @PostMapping
-    public Resources create(@RequestBody Resources resources) {
-       return resourcesService.create(resources);
+   @PostMapping("/{userId}/{groupId}")
+    public Resources create(@PathVariable Long userId, @PathVariable Long groupId, @RequestBody Resources resources) {
+       return resourcesService.create(userId, groupId, resources);
    }
 
    @DeleteMapping("/{id}")

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
 import org.application.tsiktsemestraljob.demo.Entities.User;
 import org.application.tsiktsemestraljob.demo.Repository.StudyGroupsRepository;
+import org.application.tsiktsemestraljob.demo.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -13,11 +14,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StudyGroupsService {
     private final StudyGroupsRepository studyGroupsRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
 
-    public StudyGroups create(Long id ,StudyGroups group) {
-        User creator = userService.getUserById(id);
-        group.setCreatedBy( creator );
+    public StudyGroups create(Long userId ,StudyGroups group) {
+        User creator = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found with id " + userId));
+        group.setCreatedBy(creator);
         group.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         return studyGroupsRepository.save(group);
     }
@@ -31,7 +32,17 @@ public class StudyGroupsService {
     }
 
     public StudyGroups updateStudyGroups(Long id, StudyGroups newStudyGroups) {
-        studyGroupsRepository.deleteById(id);
-        return studyGroupsRepository.save(newStudyGroups);
+        StudyGroups studyGroups = studyGroupsRepository.findById(id).orElse(null);
+        if (studyGroups == null) {throw new IllegalArgumentException("Study groups not found");}
+        if(newStudyGroups.getName() != null) {studyGroups.setName(newStudyGroups.getName());}
+        if(newStudyGroups.getCreatedBy() != null) {studyGroups.setCreatedBy(newStudyGroups.getCreatedBy());}
+        if(newStudyGroups.getDescription() != null) {studyGroups.setDescription(newStudyGroups.getDescription());}
+        if(newStudyGroups.getCreatedAt() != null) {studyGroups.setCreatedAt(new Timestamp(System.currentTimeMillis()));}
+        return studyGroupsRepository.save(studyGroups);
+    }
+
+    public StudyGroups getStudyGroupById(Long id) {
+        return studyGroupsRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Study group not found"));
     }
 }

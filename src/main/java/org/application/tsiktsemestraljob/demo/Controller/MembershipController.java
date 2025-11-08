@@ -24,9 +24,9 @@ public class MembershipController {
         return membershipService.findById(id);
     }
 
-    @PostMapping
-    public Membership createMembership(@RequestBody Membership membership) {
-        return membershipService.create(membership);
+    @PostMapping("{userId}/{groupId}")
+    public Membership createMembership(@PathVariable Long userId, @PathVariable Long groupId, @RequestBody Membership membership) {
+        return membershipService.create(userId, groupId, membership);
     }
 
     @DeleteMapping("/{id}")
@@ -34,5 +34,9 @@ public class MembershipController {
         membershipService.deleteById(id);
     }
 
+    @PutMapping("/{id}")
+    public Membership updateMembership(@PathVariable Long id, @RequestBody Membership membership) {
+        return membershipService.update(id, membership);
+    }
 
 }

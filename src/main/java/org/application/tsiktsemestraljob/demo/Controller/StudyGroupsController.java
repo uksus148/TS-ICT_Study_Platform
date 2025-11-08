@@ -18,6 +18,11 @@ public class StudyGroupsController {
         return studyGroupsService.getStudyGroups();
     }
 
+    @GetMapping("/{id}")
+    public StudyGroups getById(@PathVariable Long id) {
+        return studyGroupsService.getStudyGroupById(id);
+    }
+
     @PostMapping("/{id}")
     public StudyGroups create(@PathVariable Long id, @RequestBody StudyGroups studyGroups) {
         return studyGroupsService.create(id, studyGroups);
@@ -29,6 +34,6 @@ public class StudyGroupsController {
     }
     @PutMapping("/{id}")
     public StudyGroups update(@PathVariable Long id, @RequestBody StudyGroups studyGroups) {
-        return studyGroupsService.updateStudyGroups(id, studyGroups);
+         return studyGroupsService.updateStudyGroups(id, studyGroups);
     }
 }

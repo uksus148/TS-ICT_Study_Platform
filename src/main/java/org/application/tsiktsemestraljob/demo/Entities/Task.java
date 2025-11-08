@@ -9,22 +9,31 @@ import java.sql.Timestamp;
 @Setter
 @Entity(name = "tasks")
 public class Task {
-    @Id //primary key
-    @GeneratedValue(strategy = GenerationType.IDENTITY) //Value is AUTO INCREMENT in mySql
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "task_id")
-    private int id;
-    @Column(name = "group_id", nullable = true)
-    private int groupId;
-    @Column(name = "created_by", nullable = true)
-    private Long createdBy;
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    private StudyGroups studyGroup;
+
+    @ManyToOne
+    @JoinColumn(name = "created_by", referencedColumnName = "user_id")
+    private User createdBy;
+
     @Column(nullable = false)
     private String title;
+
     @Column
     private String description;
+
     @Column
     private String status;
+
     @Column
     private Timestamp deadline;
+
     @Column(name = "created_at")
     private Timestamp createdAt;
 }

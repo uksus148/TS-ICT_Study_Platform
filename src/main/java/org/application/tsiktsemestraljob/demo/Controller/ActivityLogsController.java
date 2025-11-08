@@ -1,6 +1,6 @@
 package org.application.tsiktsemestraljob.demo.Controller;
 
-import lombok.Getter;
+
 import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.demo.Entities.ActivityLogs;
 import org.application.tsiktsemestraljob.demo.Service.ActivityLogsService;
@@ -20,18 +20,18 @@ public class ActivityLogsController {
     }
 
     @GetMapping("/{id}")
-    public ActivityLogs getActivityLogs(@PathVariable long id) {
+    public ActivityLogs getActivityLogs(@PathVariable Long id) {
         return activityLogsService.findById(id);
     }
 
-    @PostMapping
-    public ActivityLogs createActivityLogs(@RequestBody ActivityLogs activityLogs) {
-        return activityLogsService.create(activityLogs);
+    @PostMapping("/{userId}")
+    public ActivityLogs createActivityLogs(@PathVariable Long userId, @RequestBody ActivityLogs activityLogs) {
+        return activityLogsService.create(userId, activityLogs);
     }
 
-    @PutMapping
-    public ActivityLogs updateActivityLogs(@RequestBody ActivityLogs activityLogs) {
-        return activityLogsService.update(activityLogs);
+    @PutMapping("/{id}")
+    public ActivityLogs updateActivityLogs(@PathVariable Long id ,@RequestBody ActivityLogs activityLogs) {
+        return activityLogsService.update(id, activityLogs);
     }
 
     @DeleteMapping("/{id}")

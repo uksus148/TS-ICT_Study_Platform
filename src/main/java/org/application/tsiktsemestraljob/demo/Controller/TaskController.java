@@ -23,9 +23,9 @@ public class TaskController {
         return taskService.getTaskById(id);
     }
 
-    @PostMapping
-    public Task createTask(@RequestBody Task task) {
-        return taskService.createTask(task);
+    @PostMapping("/{userId}/{groupId}")
+    public Task createTask(@PathVariable Long userId, @PathVariable Long groupId ,@RequestBody Task task) {
+        return taskService.createTask(userId, groupId, task);
     }
 
     @PutMapping("/{id}")
