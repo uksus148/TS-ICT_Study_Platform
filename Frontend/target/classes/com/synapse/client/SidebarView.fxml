@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import javafx.scene.control.*?>
+
+<BorderPane     xmlns="http://javafx.com/javafx"
+                xmlns:fx="http://javafx.com/fxml"
+                fx:controller="com.synapse.client.SidebarController"
+                prefWidth="280"
+                fx:id="sidebarRootPane">
+    <left>
+        <VBox fx:id="sidebar" styleClass="sidebar">
+            <BorderPane>
+                <left>
+                    <Label text="Menu" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+                </left>
+                <right>
+                    <Button fx:id="sidebarOff" styleClass="sidebar-toogle" onAction="#onSidebarToggle">
+                        <graphic>
+                            <FontIcon iconLiteral="bi-list" iconSize="20"/>
+                        </graphic>
+                    </Button>
+                </right>
+            </BorderPane>
+
+            <StackPane styleClass="sidebar-search">
+
+                <TextField fx:id="searchField" promptText="Search" styleClass="search-field"/>
+
+                <FontIcon iconLiteral="bi-search" iconSize="16" iconColor="#7c7c7cff">
+                    <StackPane.alignment>CENTER_LEFT</StackPane.alignment>
+
+                    <StackPane.margin>
+                        <Insets left="10"/>
+                    </StackPane.margin>
+                </FontIcon>
+
+            </StackPane>
+
+
+            <Label text="TASKS" styleClass="section-header">
+                <VBox.margin>
+                    <Insets top="10.0" bottom="5.0"/>
+                </VBox.margin>
+            </Label>
+
+
+            <HBox fx:id="upcomingButton" styleClass="sidebar-button-hbox" onMouseClicked="#onUpcomingClicked">
+                <children>
+                    <FontIcon iconLiteral="bi-chevron-double-right" iconSize="12" iconColor="#7c7c7c"/>
+                    <Label text="Upcoming"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="5" styleClass="task-count"/>
+                </children>
+            </HBox>
+
+            <HBox fx:id="todayButton" styleClass="sidebar-button-hbox" onMouseClicked="#onTodayClicked">
+                <children>
+                    <FontIcon iconLiteral="bi-list-check" iconSize="12" iconColor="#7c7c7c"/>
+                    <Label text="Today"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="5" styleClass="task-count"/>
+                </children>
+            </HBox>
+
+            <HBox fx:id="calendarButton" styleClass="sidebar-button-hbox" onMouseClicked="#onCalendarClicked">
+                <children>
+                    <FontIcon iconLiteral="bi-calendar-event" iconSize="12" iconColor="#7c7c7c"/>
+                    <Label text="Calendar"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="5" styleClass="task-count"/>
+                </children>
+            </HBox>
+
+            <HBox fx:id="groupsButton" styleClass="sidebar-button-hbox" onMouseClicked="#onGroupsClicked">
+                <children>
+                    <FontIcon iconLiteral="bi-people-fill" iconSize="12" iconColor="#7c7c7c"/>
+                    <Label text="Groups"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="5" styleClass="task-count"/>
+                </children>
+            </HBox>
+
+            <HBox fx:id="dashboardButton" styleClass="sidebar-button-hbox" onMouseClicked="#onDashboardClicked">
+                <children>
+                    <FontIcon iconLiteral="bi-kanban" iconSize="12" iconColor="#7c7c7c"/>
+                    <Label text="Dashboard"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="5" styleClass="task-count"/>
+                </children>
+            </HBox>
+
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <Button fx:id="settingsButton" text="Settings" styleClass="sidebar-button" onAction="#onSettingsClicked"/>
+            <Button fx:id="signOutButton" text="Sign out" styleClass="sidebar-button" onAction="#onSignOutClicked"/>
+        </VBox>
+    </left>
+    <right>
+        <Button fx:id="sidebarOn" styleClass="sidebar-toogle" onAction="#onSidebarToggle" visible="false">
+            <graphic>
+                <FontIcon iconLiteral="bi-list" iconSize="20"/>
+            </graphic>
+            <BorderPane.margin>
+                <Insets top="20"/>
+            </BorderPane.margin>
+        </Button>
+    </right>
+
+
+</BorderPane>
