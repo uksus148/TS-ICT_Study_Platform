@@ -1,4 +1,7 @@
 package org.application.tsiktsemestraljob.Task;
+/**
+ * This class created for do an Task POST request for easier tests implementation
+ */
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

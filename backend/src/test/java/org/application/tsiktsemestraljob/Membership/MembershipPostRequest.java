@@ -1,5 +1,7 @@
 package org.application.tsiktsemestraljob.Membership;
-
+/**
+ * This class created for do an Membership POST request for easier tests implementation
+ */
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.User.UserPostRequest;

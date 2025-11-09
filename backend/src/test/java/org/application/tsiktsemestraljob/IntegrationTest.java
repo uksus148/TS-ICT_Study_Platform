@@ -1,5 +1,8 @@
 package org.application.tsiktsemestraljob;
-
+/*
+* This class is created for easier work with @Testcontainers and Docker service, he have a implementation of Docker
+* container that helps dodge boilerplate code in every test.
+* */
 import jakarta.transaction.Transactional;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,7 +20,6 @@ public abstract class IntegrationTest {
     @Container
     public static MySQLContainer<?> MYSQL =
             new MySQLContainer<>("mysql:8.4")
-                    .withReuse(true)
                     .withDatabaseName("testdb")
                     .withUsername("test")
                     .withPassword("test");
