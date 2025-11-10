@@ -20,10 +20,14 @@ import static org.kordamp.ikonli.bootstrapicons.BootstrapIcons.CALENDAR2_X_FILL;
 import static org.kordamp.ikonli.bootstrapicons.BootstrapIcons.CHEVRON_RIGHT;
 
 public class TodayController {
+    public MainController mainController;
     @FXML
     private ListView<Task> taskListView;
 
-    private ObservableList<Task> taskList;
+    @FXML
+    public void setMainController(MainController mainController) {
+        this.mainController = mainController;
+    }
     @FXML
     public void initialize() {
         setupTaskListView();
@@ -31,7 +35,7 @@ public class TodayController {
     }
     private void loadDummyTasks() {
         LocalDate today = LocalDate.now();
-        taskList = FXCollections.observableArrayList(
+        ObservableList<Task> taskList = FXCollections.observableArrayList(
                 new Task(
                         101,
                         1,
@@ -156,7 +160,10 @@ public class TodayController {
     }
     @FXML
     private void onAddTaskClicked() {
-        System.out.println("Click 'Add New Task'");
-        // TODO: Logic to open modal window for add new task
+        if (mainController != null) {
+            mainController.requestOpenNewTaskEditor();
+        } else {
+            System.err.println("ERROR: Main Controller is null");
+        }
     }
 }

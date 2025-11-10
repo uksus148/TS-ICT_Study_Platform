@@ -13,7 +13,11 @@
     </left>
 
     <center>
-        <fx:include source="views/TodayView.fxml"/>
+        <fx:include fx:id="todayView" source="views/TodayView.fxml"/>
     </center>
+
+    <right>
+        <fx:include fx:id="taskEditor" source="views/TaskEditor.fxml"/>
+    </right>
 
 </BorderPane>

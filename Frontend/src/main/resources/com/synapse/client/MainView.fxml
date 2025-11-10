@@ -9,11 +9,15 @@
             fx:controller="com.synapse.client.MainController">
 
     <left>
-        <fx:include fx:id="sidebar" source="SidebarView.fxml"/>
+        <fx:include source="SidebarView.fxml"/>
     </left>
 
     <center>
-        <fx:include source="views/TodayView.fxml"/>
+        <fx:include fx:id="todayView" source="views/TodayView.fxml"/>
     </center>
+
+    <right>
+        <fx:include fx:id="taskEditor" source="views/TaskEditor.fxml"/>
+    </right>
 
 </BorderPane>

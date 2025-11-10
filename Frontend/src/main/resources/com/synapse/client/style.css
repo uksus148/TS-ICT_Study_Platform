@@ -222,3 +222,11 @@
     -fx-text-fill: rgb(33, 37, 41);
     -fx-line-spacing: 40px;
 }
+
+.editor {
+    -fx-background-color: rgb(244, 244, 244);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 0);
+    -fx-border-radius: 16px;
+    -fx-background-radius: 16px;
+    -fx-padding: 16px;
+}

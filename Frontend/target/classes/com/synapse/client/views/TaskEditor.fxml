@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.synapse.client.TaskEditorController"
+      styleClass="editor"
+      fx:id="taskEditor"
+      visible="false"
+      managed="false"
+      prefWidth="315">
+
+    <BorderPane>
+        <left>
+            <Label text="Task:" style="-fx-text-fill: #444444ff;-fx-font-size: 25px; -fx-font-weight: bold;-fx-line-spacing: 32px;"/>
+        </left>
+        <right>
+            <Button fx:id="closeEditor" styleClass="sidebar-toogle" onAction="#closeEditor">
+                <graphic>
+                    <FontIcon iconLiteral="bi-x" iconSize="20" iconColor="#7c7c7cff"/>
+                </graphic>
+            </Button>
+        </right>
+    </BorderPane>
+    <TextField fx:id="taskTitle" promptText="Task titlle" styleClass="editor-input"/>
+    <TextArea fx:id="taskDescription" promptText="Description" styleClass="editor-area"/>
+    <HBox>
+        <Label text="Group"/>
+        <ChoiceBox fx:id="taskStatus">
+
+        </ChoiceBox>
+    </HBox>
+
+</VBox>
