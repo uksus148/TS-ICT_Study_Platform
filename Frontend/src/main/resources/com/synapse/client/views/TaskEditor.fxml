@@ -11,6 +11,7 @@
       fx:id="taskEditor"
       visible="false"
       managed="false"
+      spacing="10"
       prefWidth="315">
 
     <BorderPane>
@@ -26,12 +27,27 @@
         </right>
     </BorderPane>
     <TextField fx:id="taskTitle" promptText="Task titlle" styleClass="editor-input"/>
-    <TextArea fx:id="taskDescription" promptText="Description" styleClass="editor-area"/>
-    <HBox>
-        <Label text="Group"/>
-        <ChoiceBox fx:id="taskStatus">
+    <TextArea fx:id="taskDescription" promptText="Description" wrapText="true" styleClass="editor-area"/>
+    <HBox alignment="CENTER_LEFT">
+        <Label text="Status" styleClass="editor-label"/>
+        <ChoiceBox fx:id="taskStatus" />
+    </HBox>
+    <HBox alignment="CENTER_LEFT">
+        <Label text="Group" styleClass="editor-label"/>
+        <ChoiceBox fx:id="taskGroup" />
+    </HBox>
+    <HBox alignment="CENTER_LEFT">
+        <Label text="Deadline" styleClass="editor-label"/>
+        <DatePicker fx:id="taskDeadline" promptText="Choose date"/>
+    </HBox>
 
-        </ChoiceBox>
+    <Region VBox.vgrow="ALWAYS"/>
+
+    <HBox alignment="CENTER_LEFT" spacing="5">
+        <Button fx:id="taskDelete" styleClass="editor-button-white">Delete Task</Button>
+        <Button fx:id="taskSave" styleClass="editor-button">Save Changes</Button>
+        <Button fx:id="taskCancel" styleClass="editor-button-white" visible="false" managed="false" onAction="#closeEditor">Cancel</Button>
+        <Button fx:id="taskCreate" visible="false" managed="false" styleClass="editor-button">Create Task</Button>
     </HBox>
 
 </VBox>

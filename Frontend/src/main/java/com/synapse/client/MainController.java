@@ -26,11 +26,7 @@ public class MainController {
             taskEditor.setVisible(false);
         }
         if (todayViewController != null) {
-            System.out.println("INFO: Найден TodayController по умолчанию. Устанавливаю MainController.");
             todayViewController.setMainController(this);
-        } else {
-            // Это не ошибка, если <center> пустой по умолчанию
-            System.out.println("INFO: Контроллер по умолчанию в <center> не найден.");
         }
         if (sidebarController != null) {
             sidebarController.setMainController(this);

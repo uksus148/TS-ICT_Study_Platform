@@ -9,7 +9,7 @@
             fx:controller="com.synapse.client.MainController">
 
     <left>
-        <fx:include fx:id="sidebar" source="SidebarView.fxml"/>
+        <fx:include source="SidebarView.fxml"/>
     </left>
 
     <center>
