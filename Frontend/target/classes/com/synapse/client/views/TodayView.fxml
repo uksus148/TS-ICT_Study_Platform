@@ -8,25 +8,25 @@
             styleClass="content-area"
             xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.synapse.client.TodayController"
+            fx:controller="com.synapse.client.controller.TodayController"
             prefHeight="400.0" prefWidth="600.0">
         <top>
             <HBox alignment="CENTER_LEFT" spacing="10.0">
-                <children>
-                    <Label text="Today" style="-fx-font-size: 48px; -fx-font-weight: bold;-fx-text-fill: #212529ff;-fx-line-spacing: 56px;" />
-                    <Label text="5" styleClass="content-count">
-                        <HBox.margin>
-                            <Insets left="5.0"/>
-                        </HBox.margin>
-                    </Label>
-
-                    <Region HBox.hgrow="ALWAYS" />
-
-                    <Button fx:id="addTaskButton" text="+ Add New Task" styleClass="add-task-button" onAction="#onAddTaskClicked" />
-                </children>
                 <padding>
                     <Insets bottom="20.0"/>
                 </padding>
+                <Label text="Today"
+                       style="-fx-font-size: 48px; -fx-font-weight: bold;-fx-text-fill: #212529ff;-fx-line-spacing: 56px;"/>
+                <Label text="5" styleClass="content-count">
+                    <HBox.margin>
+                        <Insets left="5.0"/>
+                    </HBox.margin>
+                </Label>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Button fx:id="addTaskButton" text="+ Add New Task" styleClass="add-task-button"
+                        onAction="#onAddTaskClicked"/>
             </HBox>
         </top>
         <center>

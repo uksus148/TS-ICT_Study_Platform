@@ -1,6 +1,8 @@
-package com.synapse.client;
+package com.synapse.client.controller;
 
-import javafx.collections.FXCollections;
+import com.synapse.client.Task;
+import com.synapse.client.TaskStatus;
+import com.synapse.client.store.TaskStore;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -13,7 +15,6 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Paint;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import static org.kordamp.ikonli.bootstrapicons.BootstrapIcons.CALENDAR2_X_FILL;
@@ -30,78 +31,10 @@ public class TodayController {
     }
     @FXML
     public void initialize() {
+        TaskStore taskStore = TaskStore.getInstance();
+        ObservableList<Task> allTasks = taskStore.getTasks();
+        taskListView.setItems(allTasks);
         setupTaskListView();
-        loadDummyTasks();
-    }
-    private void loadDummyTasks() {
-        LocalDate today = LocalDate.now();
-        ObservableList<Task> taskList = FXCollections.observableArrayList(
-                new Task(
-                        101,
-                        1,
-                        "maria",
-                        "Finish UI Mockup",
-                        "Design all screens for the app",
-                        today.plusDays(1),
-                        today.minusDays(3)
-                ),
-                new Task(
-                        201,
-                        2,
-                        "alex",
-                        "Setup Backend API",
-                        "Create Spring Boot endpoints for tasks",
-                        today,
-                        today.minusDays(2)
-                ),
-                new Task(
-                        202,
-                        2,
-                        "alex",
-                        "Connect to Database",
-                        "Configure JPA and PostgreSQL",
-                        null,
-                        today.minusDays(2)
-                ),
-                new Task(
-                        203,
-                        2,
-                        "alex",
-                        "Implement Login",
-                        "Add JWT authentication",
-                        today.plusDays(3),
-                        today.minusDays(1)
-                ),
-                new Task(
-                        102,
-                        1,
-                        "maria",
-                        "Test Task Cell",
-                        "Make sure the UI looks good",
-                        today,
-                        today
-                ),
-                new Task(
-                        103,
-                        1,
-                        "maria",
-                        "Implement Dashboard View",
-                        "Use JavaFX Charts to show statistics",
-                        today.plusWeeks(1),
-                        today.plusDays(1)
-                ),
-                new Task(
-                        204,
-                        2,
-                        "alex",
-                        "Write API Documentation",
-                        "Use Swagger or SpringDoc",
-                        today.minusDays(1),
-                        today.minusDays(5)
-                )
-        );
-
-        taskListView.setItems(taskList);
     }
 
     private void setupTaskListView() {
@@ -123,7 +56,7 @@ public class TodayController {
                     rowLayout.setPadding(new Insets(2, 10, 2, 10));
 
                     CheckBox checkBox = new CheckBox();
-                    checkBox.setSelected(task.getStatus());
+                    checkBox.setSelected(task.getStatus() == TaskStatus.COMPLETED);
                     checkBox.getStyleClass().add("task-checkbox");
                     // TODO: Add listener to checkBox.selectedProperty()
 
@@ -154,6 +87,12 @@ public class TodayController {
                     rowLayout.getChildren().addAll(checkBox, centerLayout, spacer, arrowRight);
 
                     setGraphic(rowLayout);
+
+                    setOnMouseClicked(event -> {
+                        if (mainController != null) {
+                            mainController.requestEditTaskEditor(task);
+                        }
+                    });
                 }
             }
         });

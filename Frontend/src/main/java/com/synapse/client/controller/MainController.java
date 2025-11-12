@@ -1,5 +1,7 @@
-package com.synapse.client;
+package com.synapse.client.controller;
 
+import com.synapse.client.Task;
+import com.synapse.client.store.TaskStore;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -22,6 +24,7 @@ public class MainController {
 
     @FXML
     public void initialize() {
+        TaskStore.getInstance().fetchTasksFromServer();
         if (taskEditor != null) {
             taskEditor.setVisible(false);
         }
@@ -32,6 +35,17 @@ public class MainController {
             sidebarController.setMainController(this);
         } else {
             System.out.println("SidebarController is null");
+        }
+    }
+
+    public void requestEditTaskEditor(Task task) {
+        if (taskEditorController != null) {
+            taskEditorController.loadTask(task);
+        }
+
+        if (taskEditor != null) {
+            taskEditor.setVisible(true);
+            taskEditor.setManaged(true);
         }
     }
 

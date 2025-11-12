@@ -1,4 +1,4 @@
-package com.synapse.client;
+package com.synapse.client.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

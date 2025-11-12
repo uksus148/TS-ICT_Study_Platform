@@ -6,7 +6,7 @@
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.synapse.client.TaskEditorController"
+      fx:controller="com.synapse.client.controller.TaskEditorController"
       styleClass="editor"
       fx:id="taskEditor"
       visible="false"
@@ -44,10 +44,10 @@
     <Region VBox.vgrow="ALWAYS"/>
 
     <HBox alignment="CENTER_LEFT" spacing="5">
-        <Button fx:id="taskDelete" styleClass="editor-button-white">Delete Task</Button>
-        <Button fx:id="taskSave" styleClass="editor-button">Save Changes</Button>
+        <Button fx:id="taskDelete" styleClass="editor-button-white" onAction="#onDeleteTask">Delete Task</Button>
+        <Button fx:id="taskSave" styleClass="editor-button" onAction="#onSaveTask">Save Changes</Button>
         <Button fx:id="taskCancel" styleClass="editor-button-white" visible="false" managed="false" onAction="#closeEditor">Cancel</Button>
-        <Button fx:id="taskCreate" visible="false" managed="false" styleClass="editor-button">Create Task</Button>
+        <Button fx:id="taskCreate" visible="false" managed="false" styleClass="editor-button" onAction="#onCreateTask">Create Task</Button>
     </HBox>
 
 </VBox>

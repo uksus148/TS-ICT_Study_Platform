@@ -9,10 +9,10 @@ public class Task {
     private String title;
     private String description;
     private LocalDate deadline;
-    private boolean status;
+    private TaskStatus status;
     private LocalDate created_at;
 
-    public Task(int task_id, int group_id, String created_by, String title, String description, LocalDate deadline, LocalDate created_at) {
+    public Task(int task_id, int group_id, String created_by, String title, String description, LocalDate deadline, LocalDate created_at, TaskStatus status) {
         this.task_id = task_id;
         this.group_id = group_id;
         this.created_by = created_by;
@@ -20,7 +20,7 @@ public class Task {
         this.description = description;
         this.deadline = deadline;
         this.created_at = created_at;
-        this.status = false;
+        this.status = status;
     }
 
     public int getTask_id() {
@@ -50,8 +50,8 @@ public class Task {
     public LocalDate getDeadline() { return deadline; }
     public void setDeadline(LocalDate deadline) { this.deadline = deadline; }
 
-    public boolean getStatus() { return this.status; }
-    public void setStatus(boolean status) { this.status = status; }
+    public TaskStatus getStatus() { return this.status; }
+    public void setStatus(TaskStatus status) { this.status = status; }
 
     public LocalDate getCreated_at() { return this.created_at; }
     public void setCreated_at(LocalDate created_at) { this.created_at = created_at; }

@@ -252,7 +252,7 @@
 }
 
 .editor-area .content {
-    -fx-effect: 0;
+    -fx-effect: null;
 }
 
 .editor-area {

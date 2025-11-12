@@ -13,4 +13,8 @@ module com.example.synapse {
 
     opens com.synapse.client to javafx.fxml;
     exports com.synapse.client;
+    exports com.synapse.client.controller;
+    opens com.synapse.client.controller to javafx.fxml;
+    exports com.synapse.client.store;
+    opens com.synapse.client.store to javafx.fxml;
 }

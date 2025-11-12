@@ -8,7 +8,7 @@
 
 <BorderPane     xmlns="http://javafx.com/javafx"
                 xmlns:fx="http://javafx.com/fxml"
-                fx:controller="com.synapse.client.SidebarController"
+                fx:controller="com.synapse.client.controller.SidebarController"
                 prefWidth="280"
                 fx:id="sidebarRootPane">
     <left>
@@ -49,48 +49,38 @@
 
 
             <HBox fx:id="upcomingButton" styleClass="sidebar-button-hbox" onMouseClicked="#onUpcomingClicked">
-                <children>
-                    <FontIcon iconLiteral="bi-chevron-double-right" iconSize="12" iconColor="#7c7c7c"/>
-                    <Label text="Upcoming"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label text="5" styleClass="task-count"/>
-                </children>
+                <FontIcon iconLiteral="bi-chevron-double-right" iconSize="12" iconColor="#7c7c7c"/>
+                <Label text="Upcoming"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="5" styleClass="task-count"/>
             </HBox>
 
             <HBox fx:id="todayButton" styleClass="sidebar-button-hbox" onMouseClicked="#onTodayClicked">
-                <children>
-                    <FontIcon iconLiteral="bi-list-check" iconSize="12" iconColor="#7c7c7c"/>
-                    <Label text="Today"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label text="5" styleClass="task-count"/>
-                </children>
+                <FontIcon iconLiteral="bi-list-check" iconSize="12" iconColor="#7c7c7c"/>
+                <Label text="Today"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="5" styleClass="task-count"/>
             </HBox>
 
             <HBox fx:id="calendarButton" styleClass="sidebar-button-hbox" onMouseClicked="#onCalendarClicked">
-                <children>
-                    <FontIcon iconLiteral="bi-calendar-event" iconSize="12" iconColor="#7c7c7c"/>
-                    <Label text="Calendar"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label text="5" styleClass="task-count"/>
-                </children>
+                <FontIcon iconLiteral="bi-calendar-event" iconSize="12" iconColor="#7c7c7c"/>
+                <Label text="Calendar"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="5" styleClass="task-count"/>
             </HBox>
 
             <HBox fx:id="groupsButton" styleClass="sidebar-button-hbox" onMouseClicked="#onGroupsClicked">
-                <children>
-                    <FontIcon iconLiteral="bi-people-fill" iconSize="12" iconColor="#7c7c7c"/>
-                    <Label text="Groups"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label text="5" styleClass="task-count"/>
-                </children>
+                <FontIcon iconLiteral="bi-people-fill" iconSize="12" iconColor="#7c7c7c"/>
+                <Label text="Groups"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="5" styleClass="task-count"/>
             </HBox>
 
             <HBox fx:id="dashboardButton" styleClass="sidebar-button-hbox" onMouseClicked="#onDashboardClicked">
-                <children>
-                    <FontIcon iconLiteral="bi-kanban" iconSize="12" iconColor="#7c7c7c"/>
-                    <Label text="Dashboard"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label text="5" styleClass="task-count"/>
-                </children>
+                <FontIcon iconLiteral="bi-kanban" iconSize="12" iconColor="#7c7c7c"/>
+                <Label text="Dashboard"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="5" styleClass="task-count"/>
             </HBox>
 
 
