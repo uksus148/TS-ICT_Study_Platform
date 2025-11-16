@@ -23,6 +23,18 @@ public class Task {
         this.status = status;
     }
 
+    public Task(String title, String description, LocalDate deadline, TaskStatus status) {
+        this.task_id = 0;
+
+        this.title = title;
+        this.description = description;
+        this.deadline = deadline;
+        this.status = status;
+        this.created_at = LocalDate.now();
+        this.group_id = 1;
+        this.created_by = "user";
+    }
+
     public int getTask_id() {
         return task_id;
     }

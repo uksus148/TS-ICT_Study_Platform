@@ -1,12 +1,20 @@
 package com.synapse.client.controller;
 
+import com.synapse.client.Task;
+import com.synapse.client.TaskStatus;
+import com.synapse.client.store.TaskStore;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.BorderPane;
+
+import java.time.LocalDate;
 
 public class SidebarController {
     private MainController mainController;
@@ -44,11 +52,22 @@ public class SidebarController {
     private Button signOutButton;
     @FXML
     private Button addTaskButton;
+    @FXML
+    private Label upcomingCount;
+    @FXML
+    private Label todayCount;
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
     }
     @FXML
     public void initialize() {
+        todayCount.textProperty().bind(
+                TaskStore.getInstance().getTodayTaskCountProperty().asString()
+        );
+
+        upcomingCount.textProperty().bind(
+                TaskStore.getInstance().getUpcomingTaskCountProperty().asString()
+        );
         sidebarRootPane.setPrefWidth(SIDEBAR_WIDTH);
     }
     @FXML

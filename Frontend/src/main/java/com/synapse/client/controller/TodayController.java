@@ -4,6 +4,7 @@ import com.synapse.client.Task;
 import com.synapse.client.TaskStatus;
 import com.synapse.client.store.TaskStore;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -15,6 +16,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Paint;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import static org.kordamp.ikonli.bootstrapicons.BootstrapIcons.CALENDAR2_X_FILL;
@@ -32,8 +34,8 @@ public class TodayController {
     @FXML
     public void initialize() {
         TaskStore taskStore = TaskStore.getInstance();
-        ObservableList<Task> allTasks = taskStore.getTasks();
-        taskListView.setItems(allTasks);
+        ObservableList<Task> todayTasks = taskStore.getTodayTasks();
+        taskListView.setItems(todayTasks);
         setupTaskListView();
     }
 

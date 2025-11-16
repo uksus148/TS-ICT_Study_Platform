@@ -2,16 +2,36 @@ package com.synapse.client.store;
 
 import com.synapse.client.Task;
 import com.synapse.client.TaskStatus;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 
 import java.time.LocalDate;
 
 public class TaskStore {
     private static TaskStore instance;
     private final ObservableList<Task> tasks;
+    private final FilteredList<Task> todayTasks;
+    private final FilteredList<Task> upcomingTasks;
+    private final ReadOnlyIntegerProperty todayTaskCount;
+    private final ReadOnlyIntegerProperty upcomingTaskCount;
     private TaskStore() {
         tasks = FXCollections.observableArrayList();
+        this.todayTasks = new FilteredList<>(this.tasks);
+        this.upcomingTasks = new FilteredList<>(this.tasks);
+        this.todayTasks.setPredicate(this::isTaskForToday);
+        this.upcomingTasks.setPredicate(this::isTaskForUpcoming);
+
+        SimpleIntegerProperty todayCountProp = new SimpleIntegerProperty();
+        SimpleIntegerProperty upcomingCountProp = new SimpleIntegerProperty();
+        todayCountProp.bind(Bindings.size(todayTasks));
+        upcomingCountProp.bind(Bindings.size(upcomingTasks));
+        this.todayTaskCount = todayCountProp;
+        this.upcomingTaskCount = upcomingCountProp;
     }
     public static TaskStore getInstance() {
         if (instance == null) {
@@ -23,16 +43,57 @@ public class TaskStore {
         return tasks;
     }
 
+    private boolean isTaskForToday(Task task) {
+        if (task.getDeadline() == null) return false;
+        LocalDate today = LocalDate.now();
+        LocalDate deadline = task.getDeadline();
+
+        boolean isDueToday = deadline.isEqual(today);
+        boolean isOverdue = deadline.isBefore(today) && (task.getStatus() != TaskStatus.COMPLETED);
+
+        return isDueToday || isOverdue;
+    }
+
+    private boolean isTaskForUpcoming(Task task) {
+        if (task.getDeadline() == null) return false;
+        LocalDate today = LocalDate.now();
+        return task.getDeadline().isAfter(today);
+    }
+
     public void addTask(Task task) {
-        tasks.add(task);
+        this.tasks.add(task);
     }
 
     public void updateTask(Task task) {
-        tasks.set(tasks.indexOf(task), task);
+        int idToUpdate = task.getTask_id();
+        for (int i = 0; i < tasks.size(); i++) {
+            if (tasks.get(i).getTask_id() == idToUpdate) {
+                tasks.set(i, task);
+                return;
+            }
+        }
     }
 
     public void deleteTask(Task task) {
-        tasks.remove(task);
+        this.tasks.remove(task);
+    }
+
+    public ObservableList<Task> getTodayTasks() {
+        return this.todayTasks;
+    }
+
+    public ObservableList<Task> getUpcomingTasks() {
+        return this.upcomingTasks;
+    }
+
+    public ReadOnlyIntegerProperty getTodayTaskCountProperty() {
+        // Возвращаем "живое" свойство самого списка
+        return this.todayTaskCount;
+    }
+
+    public ReadOnlyIntegerProperty getUpcomingTaskCountProperty() {
+        // То же самое здесь
+        return this.upcomingTaskCount;
     }
 
     public void fetchTasksFromServer() {
