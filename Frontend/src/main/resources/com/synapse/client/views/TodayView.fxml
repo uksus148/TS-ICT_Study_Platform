@@ -4,8 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<BorderPane fx:id="contentArea"
-            styleClass="content-area"
+<BorderPane styleClass="content-area"
             xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.synapse.client.controller.TodayController"
@@ -17,7 +16,7 @@
                 </padding>
                 <Label text="Today"
                        style="-fx-font-size: 48px; -fx-font-weight: bold;-fx-text-fill: #212529ff;-fx-line-spacing: 56px;"/>
-                <Label text="5" styleClass="content-count">
+                <Label text="5" fx:id="labelCount" styleClass="content-count">
                     <HBox.margin>
                         <Insets left="5.0"/>
                     </HBox.margin>
@@ -25,8 +24,7 @@
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <Button fx:id="addTaskButton" text="+ Add New Task" styleClass="add-task-button"
-                        onAction="#onAddTaskClicked"/>
+                <Button text="+ Add New Task" styleClass="add-task-button" onAction="#onAddTaskClicked"/>
             </HBox>
         </top>
         <center>

@@ -25,6 +25,8 @@ import static org.kordamp.ikonli.bootstrapicons.BootstrapIcons.CHEVRON_RIGHT;
 public class TodayController {
     public MainController mainController;
     @FXML
+    private Label labelCount;
+    @FXML
     private ListView<Task> taskListView;
 
     @FXML
@@ -33,6 +35,9 @@ public class TodayController {
     }
     @FXML
     public void initialize() {
+        labelCount.textProperty().bind(
+                TaskStore.getInstance().getTodayTaskCountProperty().asString()
+        );
         TaskStore taskStore = TaskStore.getInstance();
         ObservableList<Task> todayTasks = taskStore.getTodayTasks();
         taskListView.setItems(todayTasks);
