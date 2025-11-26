@@ -24,10 +24,10 @@
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <Button text="+ Add New Task" styleClass="add-task-button" onAction="#onAddTaskClicked"/>
+                <Button text="+ Add New Task" styleClass="add-button" onAction="#onAddTaskClicked"/>
             </HBox>
         </top>
         <center>
-            <ListView fx:id="taskListView" styleClass="task-list-view" />
+            <ListView fx:id="taskListView" styleClass="list-view" />
         </center>
 </BorderPane>

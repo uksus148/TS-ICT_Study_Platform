@@ -1,22 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ListView?>
 <BorderPane styleClass="content-area"
             xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.synapse.client.controller.UpcomingController"
+            fx:controller="com.synapse.client.controller.GroupsController"
             prefHeight="400.0" prefWidth="600.0">
     <top>
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <padding>
                 <Insets bottom="20.0"/>
             </padding>
-            <Label text="Upcoming"
+            <Label text="All groups"
                    style="-fx-font-size: 48px; -fx-font-weight: bold;-fx-text-fill: #212529ff;-fx-line-spacing: 56px;"/>
             <Label text="5" fx:id="labelCount" styleClass="content-count">
                 <HBox.margin>
@@ -26,12 +23,10 @@
 
             <Region HBox.hgrow="ALWAYS"/>
 
-            <Button text="+ Add New Task" styleClass="add-button"
-                    onAction="#onAddTaskClicked"/>
+            <Button styleClass="add-button" text="+ Add New Group" onAction="#onAddGroupClicked" />
         </HBox>
     </top>
     <center>
-        <ListView fx:id="taskListView" styleClass="list-view" />
+        <ListView fx:id="groupsListView" styleClass="list-view"/>
     </center>
 </BorderPane>
-

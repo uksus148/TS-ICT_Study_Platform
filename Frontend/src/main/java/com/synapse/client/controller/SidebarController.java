@@ -1,10 +1,6 @@
 package com.synapse.client.controller;
 
-import com.synapse.client.Task;
-import com.synapse.client.TaskStatus;
 import com.synapse.client.store.TaskStore;
-import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -13,8 +9,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.BorderPane;
-
-import java.time.LocalDate;
 
 public class SidebarController {
     private MainController mainController;
@@ -99,7 +93,11 @@ public class SidebarController {
 
     @FXML
     private void onGroupsClicked() {
-        System.out.println("Click on 'Groups'");
+        if (mainController != null) {
+            mainController.loadView("groups/GroupsView.fxml");
+        } else {
+            System.out.println("MainController is null");
+        }
     }
 
     @FXML

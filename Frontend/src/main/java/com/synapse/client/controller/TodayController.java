@@ -1,10 +1,9 @@
 package com.synapse.client.controller;
 
-import com.synapse.client.Task;
+import com.synapse.client.model.Task;
 import com.synapse.client.TaskStatus;
 import com.synapse.client.store.TaskStore;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -16,7 +15,6 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Paint;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import static org.kordamp.ikonli.bootstrapicons.BootstrapIcons.CALENDAR2_X_FILL;
@@ -64,17 +62,17 @@ public class TodayController {
 
                     CheckBox checkBox = new CheckBox();
                     checkBox.setSelected(task.getStatus() == TaskStatus.COMPLETED);
-                    checkBox.getStyleClass().add("task-checkbox");
+                    checkBox.getStyleClass().add("list-checkbox");
                     // TODO: Add listener to checkBox.selectedProperty()
 
                     BorderPane centerLayout = new BorderPane();
                     Label titleLabel = new Label(task.getTitle());
-                    titleLabel.getStyleClass().add("task-title");
+                    titleLabel.getStyleClass().add("list-title");
                     centerLayout.setTop(titleLabel);
 
                     if (task.getDeadline() != null) {
                         Label deadlineLabel = new Label(formatter.format(task.getDeadline()));
-                        deadlineLabel.getStyleClass().add("task-deadline");
+                        deadlineLabel.getStyleClass().add("list-deadline");
                         centerLayout.setLeft(deadlineLabel);
                         FontIcon deadlineIcon = new FontIcon(CALENDAR2_X_FILL);
                         deadlineIcon.setIconSize(11);
@@ -86,7 +84,7 @@ public class TodayController {
                     HBox.setHgrow(spacer, Priority.ALWAYS);
 
                     FontIcon arrowRight = new FontIcon(CHEVRON_RIGHT);
-                    arrowRight.getStyleClass().add("task-arrow-right");
+                    arrowRight.getStyleClass().add("list-arrow-right");
                     arrowRight.setIconSize(11);
                     arrowRight.setIconColor(Paint.valueOf("rgb(124, 124, 124)"));
                     arrowRight.setTranslateY(3);

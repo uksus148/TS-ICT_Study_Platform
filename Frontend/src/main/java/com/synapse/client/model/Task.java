@@ -1,10 +1,11 @@
-package com.synapse.client;
+package com.synapse.client.model;
 
+import com.synapse.client.TaskStatus;
 import java.time.LocalDate;
 
 public class Task {
-    private final int task_id;
-    private int group_id;
+    private Integer task_id;
+    private Integer group_id;
     private String created_by;
     private String title;
     private String description;
@@ -12,7 +13,12 @@ public class Task {
     private TaskStatus status;
     private LocalDate created_at;
 
-    public Task(int task_id, int group_id, String created_by, String title, String description, LocalDate deadline, LocalDate created_at, TaskStatus status) {
+
+    public Task() {
+    }
+
+
+    public Task(Integer task_id, Integer group_id, String created_by, String title, String description, LocalDate deadline, LocalDate created_at, TaskStatus status) {
         this.task_id = task_id;
         this.group_id = group_id;
         this.created_by = created_by;
@@ -24,8 +30,7 @@ public class Task {
     }
 
     public Task(String title, String description, LocalDate deadline, TaskStatus status) {
-        this.task_id = 0;
-
+        this.task_id = null;
         this.title = title;
         this.description = description;
         this.deadline = deadline;
@@ -35,23 +40,26 @@ public class Task {
         this.created_by = "user";
     }
 
-    public int getTask_id() {
+    public Integer getTask_id() {
         return task_id;
     }
 
-    public int getGroup_id() {
+    // Добавил сеттер для ID (нужен для получения ID от сервера)
+    public void setTask_id(Integer task_id) {
+        this.task_id = task_id;
+    }
+
+    public Integer getGroup_id() {
         return group_id;
     }
-    public void setGroup_id(int group_id) {
+
+    // Исправил аргумент на Integer, чтобы можно было передать null, но int тоже сработает
+    public void setGroup_id(Integer group_id) {
         this.group_id = group_id;
     }
 
-    public String getCreated_by() {
-        return created_by;
-    }
-    public void setCreated_by(String created_by) {
-        this.created_by = created_by;
-    }
+    public String getCreated_by() { return created_by; }
+    public void setCreated_by(String created_by) { this.created_by = created_by; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

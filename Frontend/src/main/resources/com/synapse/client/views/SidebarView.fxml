@@ -52,14 +52,14 @@
                 <FontIcon iconLiteral="bi-chevron-double-right" iconSize="12" iconColor="#7c7c7c"/>
                 <Label text="Upcoming"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Label text="5" fx:id="upcomingCount" styleClass="task-count"/>
+                <Label text="5" fx:id="upcomingCount" styleClass="label-count"/>
             </HBox>
 
             <HBox fx:id="todayButton" styleClass="sidebar-button-hbox" onMouseClicked="#onTodayClicked">
                 <FontIcon iconLiteral="bi-list-check" iconSize="12" iconColor="#7c7c7c"/>
                 <Label text="Today"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Label text="5" fx:id="todayCount" styleClass="task-count"/>
+                <Label text="5" fx:id="todayCount" styleClass="label-count"/>
             </HBox>
 
             <HBox fx:id="calendarButton" styleClass="sidebar-button-hbox" onMouseClicked="#onCalendarClicked">

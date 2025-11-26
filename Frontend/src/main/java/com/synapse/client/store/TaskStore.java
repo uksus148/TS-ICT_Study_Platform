@@ -1,9 +1,8 @@
 package com.synapse.client.store;
 
-import com.synapse.client.Task;
+import com.synapse.client.model.Task;
 import com.synapse.client.TaskStatus;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
@@ -43,6 +42,14 @@ public class TaskStore {
         return tasks;
     }
 
+    public ObservableList<Task> getTasksByGroupId(int groupId) {
+        FilteredList<Task> filteredData = new FilteredList<>(this.tasks, task -> {
+            return task.getGroup_id() != null && task.getGroup_id().equals(groupId);
+        });
+
+        return filteredData;
+    }
+
     private boolean isTaskForToday(Task task) {
         if (task.getDeadline() == null) return false;
         LocalDate today = LocalDate.now();
@@ -65,11 +72,10 @@ public class TaskStore {
     }
 
     public void updateTask(Task task) {
-        int idToUpdate = task.getTask_id();
         for (int i = 0; i < tasks.size(); i++) {
-            if (tasks.get(i).getTask_id() == idToUpdate) {
+            if (tasks.get(i).getTask_id().equals(task.getTask_id())) {
                 tasks.set(i, task);
-                return;
+                break;
             }
         }
     }
