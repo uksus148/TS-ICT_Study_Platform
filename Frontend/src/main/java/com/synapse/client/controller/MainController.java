@@ -59,7 +59,7 @@ public class MainController {
         showRightPanel(taskEditor);
     }
 
-    public void requestOpenNewTaskEditor(int group_id) {
+    public void requestOpenNewTaskEditor(Long group_id) {
         restoreTaskEditorPosition();
         if (taskEditorController != null) {
             taskEditorController.loadTask(group_id);
@@ -70,7 +70,7 @@ public class MainController {
     public void requestOpenNewTaskEditor() {
         restoreTaskEditorPosition();
         if (taskEditorController != null) {
-            taskEditorController.loadTask(null);
+            taskEditorController.loadTask((Task) null);
         }
         showRightPanel(taskEditor);
     }

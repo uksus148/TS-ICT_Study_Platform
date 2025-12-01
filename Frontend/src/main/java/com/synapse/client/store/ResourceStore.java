@@ -11,8 +11,7 @@ public class ResourceStore {
 
     private ResourceStore() {
         resources = FXCollections.observableArrayList();
-        // Добавим пару тестовых данных
-        resources.add(new Resource(1, "Java Textbook", "FILE", "C:/Books/java.pdf", "Admin"));
+        resources.add(new Resource(1L, "Java Textbook", "FILE", "C:/Books/java.pdf", "Admin"));
     }
 
     public static synchronized ResourceStore getInstance() {
@@ -25,14 +24,13 @@ public class ResourceStore {
     public void addResource(Resource resource) {
         // Эмуляция ID от сервера
         if (resource.getResource_id() == null) {
-            resource.setResource_id((int) (System.currentTimeMillis() % 10000));
+            resource.setResource_id((long) (System.currentTimeMillis() % 10000));
         }
         resources.add(resource);
         System.out.println("Resource added: " + resource.getName());
     }
 
-    // Используем FilteredList, чтобы список обновлялся автоматически!
-    public ObservableList<Resource> getResourcesByGroupId(int groupId) {
+    public ObservableList<Resource> getResourcesByGroupId(Long groupId) {
         return new FilteredList<>(this.resources, res ->
                 res.getGroup_id() != null && res.getGroup_id().equals(groupId)
         );

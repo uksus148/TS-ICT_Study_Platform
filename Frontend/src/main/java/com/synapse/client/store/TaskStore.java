@@ -1,10 +1,10 @@
 package com.synapse.client.store;
 
 import com.synapse.client.model.Task;
-import com.synapse.client.TaskStatus;
+import com.synapse.client.service.ApiService;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.ReadOnlyIntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.binding.IntegerBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -13,169 +13,102 @@ import java.time.LocalDate;
 
 public class TaskStore {
     private static TaskStore instance;
-    private final ObservableList<Task> tasks;
-    private final FilteredList<Task> todayTasks;
-    private final FilteredList<Task> upcomingTasks;
-    private final ReadOnlyIntegerProperty todayTaskCount;
-    private final ReadOnlyIntegerProperty upcomingTaskCount;
-    private TaskStore() {
-        tasks = FXCollections.observableArrayList();
-        this.todayTasks = new FilteredList<>(this.tasks);
-        this.upcomingTasks = new FilteredList<>(this.tasks);
-        this.todayTasks.setPredicate(this::isTaskForToday);
-        this.upcomingTasks.setPredicate(this::isTaskForUpcoming);
+    private ObservableList<Task> tasks = FXCollections.observableArrayList();
 
-        SimpleIntegerProperty todayCountProp = new SimpleIntegerProperty();
-        SimpleIntegerProperty upcomingCountProp = new SimpleIntegerProperty();
-        todayCountProp.bind(Bindings.size(todayTasks));
-        upcomingCountProp.bind(Bindings.size(upcomingTasks));
-        this.todayTaskCount = todayCountProp;
-        this.upcomingTaskCount = upcomingCountProp;
-    }
-    public static TaskStore getInstance() {
-        if (instance == null) {
-            instance = new TaskStore();
-        }
+    private TaskStore() {}
+
+    public static synchronized TaskStore getInstance() {
+        if (instance == null) instance = new TaskStore();
         return instance;
     }
+
     public ObservableList<Task> getTasks() {
         return tasks;
     }
 
-    public ObservableList<Task> getTasksByGroupId(int groupId) {
-        FilteredList<Task> filteredData = new FilteredList<>(this.tasks, task -> {
-            return task.getGroup_id() != null && task.getGroup_id().equals(groupId);
+    // Фильтр для конкретной группы (как мы делали с Long)
+    public ObservableList<Task> getTasksByGroupId(Long groupId) {
+        return new FilteredList<>(this.tasks, task ->
+                task.getGroup_id() != null && task.getGroup_id().equals(groupId)
+        );
+    }
+
+    // === 1. ЗАГРУЗКА ВСЕХ ЗАДАЧ ПРИ СТАРТЕ ===
+    public void fetchTasksFromServer() {
+        ApiService.getInstance().getAllTasks().thenAccept(loadedTasks -> {
+            if (loadedTasks != null) {
+                Platform.runLater(() -> {
+                    tasks.clear();
+                    tasks.addAll(loadedTasks);
+                    System.out.println("Tasks loaded: " + tasks.size());
+                });
+            }
         });
-
-        return filteredData;
-    }
-
-    private boolean isTaskForToday(Task task) {
-        if (task.getDeadline() == null) return false;
-        LocalDate today = LocalDate.now();
-        LocalDate deadline = task.getDeadline();
-
-        boolean isDueToday = deadline.isEqual(today);
-        boolean isOverdue = deadline.isBefore(today) && (task.getStatus() != TaskStatus.COMPLETED);
-
-        return isDueToday || isOverdue;
-    }
-
-    private boolean isTaskForUpcoming(Task task) {
-        if (task.getDeadline() == null) return false;
-        LocalDate today = LocalDate.now();
-        return task.getDeadline().isAfter(today);
     }
 
     public void addTask(Task task) {
-        this.tasks.add(task);
+        if (task.getCreated_by() == null) {
+            // TODO: Change to auto detect id
+            task.setCreated_by(1L);
+        }
+
+        ApiService.getInstance().createTask(task).thenAccept(savedTask -> {
+            if (savedTask != null) {
+                Platform.runLater(() -> {
+                    tasks.add(savedTask);
+                    System.out.println("Task created: " + savedTask.getTitle());
+                });
+            }
+        });
     }
 
     public void updateTask(Task task) {
-        for (int i = 0; i < tasks.size(); i++) {
-            if (tasks.get(i).getTask_id().equals(task.getTask_id())) {
-                tasks.set(i, task);
-                break;
+        ApiService.getInstance().updateTask(task).thenAccept(updatedTask -> {
+            if (updatedTask != null) {
+                Platform.runLater(() -> {
+                    for (int i = 0; i < tasks.size(); i++) {
+                        if (tasks.get(i).getTask_id().equals(updatedTask.getTask_id())) {
+                            tasks.set(i, updatedTask);
+                            break;
+                        }
+                    }
+                    System.out.println("Task updated: " + updatedTask.getTitle());
+                });
             }
-        }
+        });
     }
 
     public void deleteTask(Task task) {
-        this.tasks.remove(task);
+        ApiService.getInstance().deleteTask(task.getTask_id())
+                .thenAccept(voidResponse -> {
+                    Platform.runLater(() -> {
+                        tasks.remove(task);
+                        System.out.println("Task deleted");
+                    });
+                });
     }
 
     public ObservableList<Task> getTodayTasks() {
-        return this.todayTasks;
+        return new FilteredList<>(this.tasks, task -> {
+            if (task.getDeadline() == null) return false;
+            return task.getDeadline().equals(LocalDate.now());
+        });
     }
 
     public ObservableList<Task> getUpcomingTasks() {
-        return this.upcomingTasks;
+        return new FilteredList<>(this.tasks, task -> {
+            if (task.getDeadline() == null) return false;
+            return task.getDeadline().isAfter(LocalDate.now());
+        });
     }
 
-    public ReadOnlyIntegerProperty getTodayTaskCountProperty() {
-        // Возвращаем "живое" свойство самого списка
-        return this.todayTaskCount;
+    public IntegerBinding getTodayTaskCountProperty() {
+        FilteredList<Task> todayTasks = (FilteredList<Task>) getTodayTasks();
+        return Bindings.size(todayTasks);
     }
 
-    public ReadOnlyIntegerProperty getUpcomingTaskCountProperty() {
-        // То же самое здесь
-        return this.upcomingTaskCount;
-    }
-
-    public void fetchTasksFromServer() {
-        tasks.clear();
-        LocalDate today = LocalDate.now();
-        tasks.addAll(
-                new Task(
-                        101,
-                        1,
-                        "maria",
-                        "Finish UI Mockup",
-                        "Design all screens for the app",
-                        today.plusDays(1),
-                        today.minusDays(3),
-                        TaskStatus.COMPLETED
-                ),
-                new Task(
-                        201,
-                        2,
-                        "alex",
-                        "Setup Backend API",
-                        "Create Spring Boot endpoints for tasks",
-                        today,
-                        today.minusDays(2),
-                        TaskStatus.IN_PROGRESS
-                ),
-                new Task(
-                        202,
-                        2,
-                        "alex",
-                        "Connect to Database",
-                        "Configure JPA and PostgreSQL",
-                        null,
-                        today.minusDays(2),
-                        TaskStatus.CANCELED
-                ),
-                new Task(
-                        203,
-                        2,
-                        "alex",
-                        "Implement Login",
-                        "Add JWT authentication",
-                        today.plusDays(3),
-                        today.minusDays(1),
-                        TaskStatus.COMPLETED
-                ),
-                new Task(
-                        102,
-                        1,
-                        "maria",
-                        "Test Task Cell",
-                        "Make sure the UI looks good",
-                        today,
-                        today,
-                        TaskStatus.CANCELED
-                ),
-                new Task(
-                        103,
-                        1,
-                        "maria",
-                        "Implement Dashboard View",
-                        "Use JavaFX Charts to show statistics",
-                        today.plusWeeks(1),
-                        today.plusDays(1),
-                        TaskStatus.IN_PROGRESS
-                ),
-                new Task(
-                        204,
-                        2,
-                        "alex",
-                        "Write API Documentation",
-                        "Use Swagger or SpringDoc",
-                        today.minusDays(1),
-                        today.minusDays(5),
-                        TaskStatus.COMPLETED
-                )
-        );
+    public IntegerBinding getUpcomingTaskCountProperty() {
+        FilteredList<Task> upcomingTasks = (FilteredList<Task>) getUpcomingTasks();
+        return Bindings.size(upcomingTasks);
     }
 }

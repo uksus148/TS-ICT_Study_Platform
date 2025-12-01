@@ -1,20 +1,29 @@
 package com.synapse.client.model;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.time.LocalDate;
 
 public class Resource {
-    private Integer resource_id;
-    private Integer group_id;
+    @SerializedName(value = "resource_id")
+    private Long resource_id;
+    @SerializedName(value = "group_id")
+    private Long group_id;
+    @SerializedName(value = "title")
     private String name;
+    @SerializedName(value = "type")
     private String type;
+    @SerializedName(value = "path_or_url")
     private String path;
+    @SerializedName(value = "uploaded_by")
     private String created_by;
+    @SerializedName(value = "uploaded_at")
     private LocalDate created_at;
 
     public Resource() {
     }
 
-    public Resource(Integer group_id, String name, String type, String path, String created_by) {
+    public Resource(Long group_id, String name, String type, String path, String created_by) {
         this.group_id = group_id;
         this.name = name;
         this.type = type;
@@ -23,11 +32,11 @@ public class Resource {
         this.created_at = LocalDate.now();
     }
 
-    public Integer getResource_id() { return resource_id; }
-    public void setResource_id(Integer resource_id) { this.resource_id = resource_id; }
+    public Long getResource_id() { return resource_id; }
+    public void setResource_id(Long resource_id) { this.resource_id = resource_id; }
 
-    public Integer getGroup_id() { return group_id; }
-    public void setGroup_id(Integer group_id) { this.group_id = group_id; }
+    public Long getGroup_id() { return group_id; }
+    public void setGroup_id(Long group_id) { this.group_id = group_id; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }

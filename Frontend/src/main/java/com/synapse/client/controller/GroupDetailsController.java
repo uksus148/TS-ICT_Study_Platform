@@ -49,44 +49,35 @@ public class GroupDetailsController {
     private ListView<User> membersListView;   // Список имен участников
     @FXML
     private PieChart tasksPieChart;
-
-    // Метод для связи с главным контроллером
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
     }
 
-    // Самый важный метод! Вызывается при открытии группы
     public void setGroup(Group group) {
         this.currentGroup = group;
-
-        // 1. Устанавливаем название
         groupNameLabel.setText(group.getName());
-
-        // 2. Тут нужно загрузить задачи для ЭТОЙ группы (запросить у Store/Server)
-        // Пока сделаем фейковые данные для примера:
-        loadDummyData();
+        loadData();
 
         setupTaskListView();
         setupResourceListView();
         setupMembersListView();
     }
 
-    private void loadDummyData() {
+    private void loadData() {
+        if (currentGroup == null || currentGroup.getGroup_id() == null) return;
+
         ObservableList<Task> tasks = TaskStore.getInstance().getTasksByGroupId(currentGroup.getGroup_id());
         tasksListView.setItems(tasks);
 
-        tasks.addListener((ListChangeListener<Task>) change -> {
-            updateChart(tasks);
-        });
-
+        tasks.addListener((ListChangeListener<Task>) change -> updateChart(tasks));
         updateChart(tasks);
 
-        // Пример участников
         ObservableList<User> members = MembersStore.getInstance()
-                .getMembersByGroupId(currentGroup.getGroup_id());
+                .getMembersByGroupId(currentGroup.getGroup_id()); // Если там int
         membersListView.setItems(members);
+
         ObservableList<Resource> resources = ResourceStore.getInstance()
-                .getResourcesByGroupId(currentGroup.getGroup_id());
+                .getResourcesByGroupId(currentGroup.getGroup_id()); // Если там int
         resourcesListView.setItems(resources);
     }
 
@@ -161,16 +152,13 @@ public class GroupDetailsController {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    // 1. Контейнер для строки
                     HBox row = new HBox(10);
                     row.setAlignment(Pos.CENTER_LEFT);
 
-                    // 2. Иконка в зависимости от типа
                     String iconLiteral = "FILE".equals(resource.getType()) ? "bi-file-earmark-text" : "bi-link-45deg";
                     FontIcon icon = new FontIcon(iconLiteral);
                     icon.setIconSize(18);
 
-                    // 3. Название и описание
                     VBox textContainer = new VBox();
                     Label nameLabel = new Label(resource.getName());
                     nameLabel.setStyle("-fx-font-weight: bold;");
@@ -181,15 +169,14 @@ public class GroupDetailsController {
                     Region spacer = new Region();
                     HBox.setHgrow(spacer, Priority.ALWAYS);
 
-                    // 4. Кнопка действия (Скачать или Открыть)
                     Button actionBtn = new Button();
-                    actionBtn.getStyleClass().add("btn-secondary"); // Если есть такой стиль
+                    actionBtn.getStyleClass().add("btn-secondary");
 
                     if ("LINK".equals(resource.getType())) {
-                        actionBtn.setGraphic(new FontIcon("bi-box-arrow-up-right")); // Иконка перехода
+                        actionBtn.setGraphic(new FontIcon("bi-box-arrow-up-right"));
                         actionBtn.setOnAction(e -> openLink(resource.getPath()));
                     } else {
-                        actionBtn.setGraphic(new FontIcon("bi-download")); // Иконка скачивания
+                        actionBtn.setGraphic(new FontIcon("bi-download"));
                         actionBtn.setOnAction(e -> downloadFile(resource));
                     }
 
@@ -200,7 +187,6 @@ public class GroupDetailsController {
         });
     }
 
-    // --- Логика открытия ссылки ---
     private void openLink(String url) {
         try {
             if (Desktop.isDesktopSupported()) {
@@ -213,28 +199,21 @@ public class GroupDetailsController {
         }
     }
 
-    // --- Логика скачивания файла ---
     private void downloadFile(Resource resource) {
-        // 1. Спрашиваем пользователя, КУДА сохранить
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Resource");
         fileChooser.setInitialFileName(resource.getName()); // Предлагаем имя
 
-        // Получаем сцену для привязки окна
         File destFile = fileChooser.showSaveDialog(resourcesListView.getScene().getWindow());
 
         if (destFile != null) {
             try {
-                // 2. Копируем файл из "хранилища" (пока это локальный путь) в выбранное место
-                // В РЕАЛЬНОСТИ тут будет запрос к серверу: client.download(resource.getId(), destFile);
-
                 File sourceFile = new File(resource.getPath());
                 if (sourceFile.exists()) {
                     Files.copy(sourceFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     System.out.println("File saved to: " + destFile.getAbsolutePath());
                 } else {
                     System.err.println("Source file not found (Mock mode): " + resource.getPath());
-                    // Тут можно показать Alert пользователю
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -269,17 +248,13 @@ public class GroupDetailsController {
 
                     row.getChildren().addAll(infoBox, spacer);
 
-                    // --- ЛОГИКА КНОПКИ KICK ---
-                    // 1. Проверяем, кто мы? (Пока хардкод "Me", замените на реального юзера из Session/AuthStore)
-                    String currentLoggedInUser = "Me"; // или SessionStore.getInstance().getCurrentUser().getUsername();
+                    Long currentLoggedInUser = 1L;
+                    //TODO: Change from session after add profile
 
-                    // 2. Являемся ли мы создателем этой группы?
                     boolean amIAdmin = currentGroup.getCreated_by().equals(currentLoggedInUser);
 
-                    // 3. Это не мы сами? (Нельзя выгнать себя кнопкой kick, для этого есть кнопка Leave Group)
-                    boolean isTargetSelf = user.getUsername().equals(currentLoggedInUser);
+                    boolean isTargetSelf = user.getUser_id().equals(currentLoggedInUser);
 
-                    // ПОКАЗЫВАЕМ КНОПКУ ТОЛЬКО ЕСЛИ: Я Админ И Цель не Я
                     if (amIAdmin && !isTargetSelf) {
                         Button kickButton = new Button();
                         kickButton.setGraphic(new FontIcon("bi-person-dash-fill")); // Иконка удаления
@@ -299,7 +274,6 @@ public class GroupDetailsController {
     }
 
     private void kickUser(User user) {
-        // Обязательно спрашиваем подтверждение!
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Kick Member");
         alert.setHeaderText("Remove " + user.getUsername() + "?");
@@ -312,13 +286,12 @@ public class GroupDetailsController {
     }
 
     private void updateChart(ObservableList<Task> tasks) {
-        // 1. Считаем количество задач по статусам
         int canceledCount = 0;
         int inProgressCount = 0;
         int completedCount = 0;
 
         for (Task task : tasks) {
-            if (task.getStatus() == null) continue; // Защита от null
+            if (task.getStatus() == null) continue;
 
             switch (task.getStatus()) {
                 case CANCELED -> canceledCount++;
@@ -327,17 +300,12 @@ public class GroupDetailsController {
             }
         }
 
-        // 2. Создаем данные для графика
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
 
         if (canceledCount > 0) pieChartData.add(new PieChart.Data("Canceled (" + canceledCount + ")", canceledCount));
         if (inProgressCount > 0) pieChartData.add(new PieChart.Data("In Progress (" + inProgressCount + ")", inProgressCount));
         if (completedCount > 0) pieChartData.add(new PieChart.Data("Completed (" + completedCount + ")", completedCount));
-
-        // 3. Устанавливаем данные в график
         tasksPieChart.setData(pieChartData);
-
-        // (Опционально) Убираем легенду, если она мешает, или меняем заголовок
         tasksPieChart.setTitle("Status Overview");
     }
 

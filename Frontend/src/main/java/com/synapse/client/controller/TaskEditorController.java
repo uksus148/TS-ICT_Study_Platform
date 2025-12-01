@@ -10,6 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class TaskEditorController {
     private Task task;
@@ -50,7 +51,7 @@ public class TaskEditorController {
         } else {
             System.out.println("Opening NEW task (task is null)");
         }
-        boolean isEditing = (task != null && task.getTask_id() != null && task.getTask_id() > 0);
+        boolean isEditing = (task != null && task.getTask_id() != null && task.getTask_id() > 0L);
         System.out.println("Is Editing Mode: " + isEditing);
         if (isEditing) {
             this.task = task;
@@ -84,17 +85,17 @@ public class TaskEditorController {
         }
     }
     public void loadTask() {
-        loadTask(null);
+        loadTask((Task) null);
     }
 
-    public void loadTask(int groupId) {
+    public void loadTask(Long groupId) {
         Task newTaskWithGroup = new Task();
         newTaskWithGroup.setGroup_id(groupId);
 
         loadTask(newTaskWithGroup);
     }
 
-    private void selectGroupInChoiceBox(Integer groupId) {
+    private void selectGroupInChoiceBox(Long groupId) {
         if (groupId == null) return;
 
         // Проходим по всем группам в выпадающем списке
@@ -143,8 +144,8 @@ public class TaskEditorController {
         }
 
         updateTaskFromFields();
-        this.task.setCreated_at(LocalDate.now());
-        this.task.setCreated_by("User");
+        this.task.setCreated_at(LocalDateTime.now());
+        this.task.setCreated_by(1L);
 
         TaskStore.getInstance().addTask(this.task);
         closeEditor();

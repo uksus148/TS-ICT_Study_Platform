@@ -10,6 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class GroupEditorController {
     private MainController mainController;
@@ -90,8 +91,8 @@ public class GroupEditorController {
         }
 
         updateGroupFromFields();
-        this.group.setCreated_at(LocalDate.now());
-        this.group.setCreated_by("User");
+        this.group.setCreated_at(LocalDateTime.now());
+        this.group.setCreated_by(1L);
 
         GroupsStore.getInstance().addGroup(this.group);
         closeEditor();
