@@ -3,7 +3,7 @@ package com.synapse.client.controller;
 import com.synapse.client.TaskStatus;
 import com.synapse.client.model.Group;
 import com.synapse.client.model.Resource;
-import com.synapse.client.model.Task; // Убедись, что у тебя есть этот класс
+import com.synapse.client.model.Task;
 import com.synapse.client.model.User;
 import com.synapse.client.store.MembersStore;
 import com.synapse.client.store.ResourceStore;
@@ -42,11 +42,11 @@ public class GroupDetailsController {
     @FXML
     private Label groupNameLabel;
     @FXML
-    private ListView<Task> tasksListView; // Список задач
+    private ListView<Task> tasksListView;
     @FXML
     private ListView<Resource> resourcesListView;
     @FXML
-    private ListView<User> membersListView;   // Список имен участников
+    private ListView<User> membersListView;
     @FXML
     private PieChart tasksPieChart;
     public void setMainController(MainController mainController) {
@@ -65,19 +65,19 @@ public class GroupDetailsController {
 
     private void loadData() {
         if (currentGroup == null || currentGroup.getGroup_id() == null) return;
-
-        ObservableList<Task> tasks = TaskStore.getInstance().getTasksByGroupId(currentGroup.getGroup_id());
+        Long groupId = currentGroup.getGroup_id();
+        ObservableList<Task> tasks = TaskStore.getInstance().getTasksByGroupId(groupId);
         tasksListView.setItems(tasks);
-
         tasks.addListener((ListChangeListener<Task>) change -> updateChart(tasks));
+
         updateChart(tasks);
 
-        ObservableList<User> members = MembersStore.getInstance()
-                .getMembersByGroupId(currentGroup.getGroup_id()); // Если там int
+        MembersStore.getInstance().fetchMembersForGroup(groupId);
+        ObservableList<User> members = MembersStore.getInstance().getMembersByGroupId(groupId);
         membersListView.setItems(members);
 
-        ObservableList<Resource> resources = ResourceStore.getInstance()
-                .getResourcesByGroupId(currentGroup.getGroup_id()); // Если там int
+        ResourceStore.getInstance().fetchResourcesForGroup(currentGroup.getGroup_id());
+        ObservableList<Resource> resources = ResourceStore.getInstance().getResourcesByGroupId(groupId);
         resourcesListView.setItems(resources);
     }
 
@@ -162,7 +162,10 @@ public class GroupDetailsController {
                     VBox textContainer = new VBox();
                     Label nameLabel = new Label(resource.getName());
                     nameLabel.setStyle("-fx-font-weight: bold;");
-                    Label pathLabel = new Label(resource.getCreated_by()); // Или дата
+                    Long creatorId = resource.getCreated_by();
+                    String creatorName = MembersStore.getInstance().getUserNameById(creatorId);
+                    Label pathLabel = new Label("Uploaded by: " + creatorName);
+
                     pathLabel.setStyle("-fx-text-fill: gray; -fx-font-size: 10px;");
                     textContainer.getChildren().addAll(nameLabel, pathLabel);
 
@@ -202,7 +205,7 @@ public class GroupDetailsController {
     private void downloadFile(Resource resource) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Resource");
-        fileChooser.setInitialFileName(resource.getName()); // Предлагаем имя
+        fileChooser.setInitialFileName(resource.getName());
 
         File destFile = fileChooser.showSaveDialog(resourcesListView.getScene().getWindow());
 
@@ -234,8 +237,6 @@ public class GroupDetailsController {
                 } else {
                     HBox row = new HBox(10);
                     row.setAlignment(Pos.CENTER_LEFT);
-
-                    // Имя участника + Email (опционально)
                     VBox infoBox = new VBox();
                     Label nameLabel = new Label(user.getUsername());
                     nameLabel.setStyle("-fx-font-weight: bold;");
@@ -257,15 +258,12 @@ public class GroupDetailsController {
 
                     if (amIAdmin && !isTargetSelf) {
                         Button kickButton = new Button();
-                        kickButton.setGraphic(new FontIcon("bi-person-dash-fill")); // Иконка удаления
-                        kickButton.setStyle("-fx-background-color: #ffebee; -fx-text-fill: #dc3545;"); // Красный оттенок
-
-                        // Обработчик нажатия
+                        kickButton.setGraphic(new FontIcon("bi-person-dash-fill"));
+                        kickButton.setStyle("-fx-background-color: #ffebee; -fx-text-fill: #dc3545;");
                         kickButton.setOnAction(event -> kickUser(user));
 
                         row.getChildren().add(kickButton);
                     }
-                    // ---------------------------
 
                     setGraphic(row);
                 }
@@ -280,7 +278,6 @@ public class GroupDetailsController {
         alert.setContentText("Are you sure you want to remove this user from the group?");
 
         if (alert.showAndWait().get() == ButtonType.OK) {
-            // Удаляем из хранилища
             MembersStore.getInstance().removeMember(currentGroup.getGroup_id(), user);
         }
     }

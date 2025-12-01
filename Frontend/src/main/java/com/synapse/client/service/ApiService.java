@@ -2,7 +2,10 @@ package com.synapse.client.service;
 
 import com.google.gson.*;
 import com.synapse.client.model.Group;
+import com.synapse.client.model.Resource;
 import com.synapse.client.model.Task;
+import com.synapse.client.model.User;
+import com.synapse.client.store.MembershipDeserializer;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -143,6 +146,34 @@ public class ApiService {
         return sendRequest(request, Task.class);
     }
 
+    public CompletableFuture<User[]> getGroupMembers(Long groupId) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/memberships/group/" + groupId))
+                .GET()
+                .build();
+
+        return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    if (response.statusCode() >= 300) {
+                        System.err.println("Error loading members: " + response.statusCode());
+                        return new User[0];
+                    }
+
+                    JsonArray jsonArray = JsonParser.parseString(response.body()).getAsJsonArray();
+                    User[] users = new User[jsonArray.size()];
+                    MembershipDeserializer md = new MembershipDeserializer();
+
+                    for(int i=0; i<jsonArray.size(); i++) {
+                        users[i] = md.deserialize(jsonArray.get(i), User.class, null);
+                    }
+                    return users;
+                })
+                .exceptionally(e -> {
+                    e.printStackTrace();
+                    return new User[0];
+                });
+    }
+
     public CompletableFuture<Void> deleteTask(Long id) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + "/tasks/" + id))
@@ -155,6 +186,37 @@ public class ApiService {
                         throw new RuntimeException("Error: " + response.statusCode());
                     }
                 });
+    }
+
+    public CompletableFuture<Resource> createResource(Resource resource) {
+        Long userId = resource.getCreated_by();
+        Long groupId = resource.getGroup_id();
+
+        if (userId == null) userId = 1L;
+        if (groupId == null) {
+            System.err.println("Error: Group ID is missing for resource creation");
+            return CompletableFuture.failedFuture(new RuntimeException("Group ID required"));
+        }
+
+        String json = gson.toJson(resource);
+        String requestUrl = BASE_URL + "/resources/" + userId + "/" + groupId;
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(requestUrl))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        return sendRequest(request, Resource.class);
+    }
+
+    public CompletableFuture<Resource[]> getGroupResources(Long groupId) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/resources/group/" + groupId))
+                .GET()
+                .build();
+
+        return sendRequest(request, Resource[].class);
     }
 
     private <T> CompletableFuture<T> sendRequest(HttpRequest request, Class<T> responseType) {

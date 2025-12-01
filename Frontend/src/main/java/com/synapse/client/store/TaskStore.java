@@ -26,14 +26,12 @@ public class TaskStore {
         return tasks;
     }
 
-    // Фильтр для конкретной группы (как мы делали с Long)
     public ObservableList<Task> getTasksByGroupId(Long groupId) {
         return new FilteredList<>(this.tasks, task ->
                 task.getGroup_id() != null && task.getGroup_id().equals(groupId)
         );
     }
 
-    // === 1. ЗАГРУЗКА ВСЕХ ЗАДАЧ ПРИ СТАРТЕ ===
     public void fetchTasksFromServer() {
         ApiService.getInstance().getAllTasks().thenAccept(loadedTasks -> {
             if (loadedTasks != null) {

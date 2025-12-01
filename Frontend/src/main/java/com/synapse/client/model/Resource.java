@@ -3,6 +3,7 @@ package com.synapse.client.model;
 import com.google.gson.annotations.SerializedName;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Resource {
     @SerializedName(value = "resource_id")
@@ -16,20 +17,20 @@ public class Resource {
     @SerializedName(value = "path_or_url")
     private String path;
     @SerializedName(value = "uploaded_by")
-    private String created_by;
+    private Long created_by;
     @SerializedName(value = "uploaded_at")
-    private LocalDate created_at;
+    private LocalDateTime created_at;
 
     public Resource() {
     }
 
-    public Resource(Long group_id, String name, String type, String path, String created_by) {
+    public Resource(Long group_id, String name, String type, String path, Long created_by) {
         this.group_id = group_id;
         this.name = name;
         this.type = type;
         this.path = path;
         this.created_by = created_by;
-        this.created_at = LocalDate.now();
+        this.created_at = LocalDateTime.now();
     }
 
     public Long getResource_id() { return resource_id; }
@@ -47,11 +48,11 @@ public class Resource {
     public String getPath() { return path; }
     public void setPath(String path) { this.path = path; }
 
-    public String getCreated_by() { return created_by; }
-    public void setCreated_by(String created_by) { this.created_by = created_by; }
+    public Long getCreated_by() { return created_by; }
+    public void setCreated_by(Long created_by) { this.created_by = created_by; }
 
-    public LocalDate getCreated_at() { return created_at; }
-    public void setCreated_at(LocalDate created_at) { this.created_at = created_at; }
+    public LocalDateTime getCreated_at() { return created_at; }
+    public void setCreated_at(LocalDateTime created_at) { this.created_at = created_at; }
 
     @Override
     public String toString() { return name; }
