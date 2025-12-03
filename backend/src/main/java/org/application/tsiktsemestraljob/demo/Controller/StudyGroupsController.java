@@ -1,6 +1,9 @@
 package org.application.tsiktsemestraljob.demo.Controller;
 
 import lombok.RequiredArgsConstructor;
+import org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO.StudyGroupsMapper;
+import org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO.StudyGroupsRequestDTO;
+import org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO.StudyGroupsResponseDTO;
 import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
 import org.application.tsiktsemestraljob.demo.Service.StudyGroupsService;
 import org.springframework.web.bind.annotation.*;
@@ -14,18 +17,24 @@ public class StudyGroupsController {
     private final StudyGroupsService studyGroupsService;
 
     @GetMapping
-    public List<StudyGroups> getAll() {
-        return studyGroupsService.getStudyGroups();
+    public List<StudyGroupsResponseDTO> getAll() {
+        return studyGroupsService.getStudyGroups()
+                .stream()
+                .map(StudyGroupsMapper::toDto)
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public StudyGroups getById(@PathVariable Long id) {
-        return studyGroupsService.getStudyGroupById(id);
+    public StudyGroupsResponseDTO getById(@PathVariable Long id) {
+        StudyGroups studyGroup = studyGroupsService.getStudyGroupById(id);
+        return StudyGroupsMapper.toDto(studyGroup);
     }
 
     @PostMapping("/{id}")
-    public StudyGroups create(@PathVariable Long id, @RequestBody StudyGroups studyGroups) {
-        return studyGroupsService.create(id, studyGroups);
+    public StudyGroupsResponseDTO create(@PathVariable Long id, @RequestBody StudyGroupsRequestDTO dto) {
+        StudyGroups studyGroup = StudyGroupsMapper.toEntity(dto);
+        StudyGroups saveGroup = studyGroupsService.create(id, studyGroup);
+        return StudyGroupsMapper.toDto(saveGroup);
     }
 
     @DeleteMapping("/{id}")
@@ -33,7 +42,8 @@ public class StudyGroupsController {
         studyGroupsService.deleteStudyGroups(id);
     }
     @PutMapping("/{id}")
-    public StudyGroups update(@PathVariable Long id, @RequestBody StudyGroups studyGroups) {
-         return studyGroupsService.updateStudyGroups(id, studyGroups);
+    public StudyGroupsResponseDTO update(@PathVariable Long id, @RequestBody StudyGroupsRequestDTO dto) {
+         StudyGroups studyGroup = studyGroupsService.updateStudyGroups(id, StudyGroupsMapper.toEntity(dto));
+         return StudyGroupsMapper.toDto(studyGroup);
     }
 }

@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @Entity
@@ -31,6 +33,11 @@ public class Resources {
     @Column(name = "path_or_url")
     private String pathOrUrl;
 
+    @PrePersist
+    protected void onCreate() {
+        this.uploadedAt = LocalDate.now();
+    }
+
     @Column(name = "uploaded_at")
-    private Timestamp uploadedAt;
+    private LocalDate uploadedAt;
 }

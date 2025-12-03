@@ -43,7 +43,6 @@ public class ResourcesService {
            if(resources.getPathOrUrl() != null) {oldResources.setPathOrUrl(resources.getPathOrUrl());}
            if(resources.getType() != null) {oldResources.setType(resources.getType());}
            oldResources.setTitle(resources.getTitle());
-           oldResources.setUploadedBy(resources.getUploadedBy());
            if(resources.getUploadedAt() != null) {oldResources.setUploadedAt(resources.getUploadedAt());}
            return resourcesRepository.save(oldResources);
     }

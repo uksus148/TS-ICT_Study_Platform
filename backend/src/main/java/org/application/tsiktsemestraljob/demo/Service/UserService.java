@@ -42,7 +42,6 @@ public class UserService {
         if (newUser.getPasswordHash() != null) {
             existing.setPasswordHash(newUser.getPasswordHash());
         }
-        existing.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         return userRepository.save(existing);
     }
 }

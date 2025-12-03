@@ -1,6 +1,5 @@
 package org.application.tsiktsemestraljob.demo.Controller;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.demo.Entities.Membership;
 import org.application.tsiktsemestraljob.demo.Service.MembershipService;

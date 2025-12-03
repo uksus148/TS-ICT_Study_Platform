@@ -3,7 +3,8 @@ package org.application.tsiktsemestraljob.Task;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.application.tsiktsemestraljob.IntegrationTest;
-import org.application.tsiktsemestraljob.demo.Entities.Task;
+import org.application.tsiktsemestraljob.demo.DTO.TaskDTO.TaskRequestDTO;
+import org.application.tsiktsemestraljob.demo.DTO.TaskDTO.TaskResponseDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -40,8 +41,8 @@ public class TaskIntegrationTest extends IntegrationTest {
     @Test
     void getTaskById() throws Exception {
         TaskPostRequest taskPostRequest = new TaskPostRequest(mockMvc, objectMapper);
-        Task task = taskPostRequest.postTask("Test Task");
-        Long id = task.getId();
+        TaskResponseDTO dto = taskPostRequest.postTask("Test Task");
+        Long id = dto.id();
 
         mockMvc.perform(get("/api/tasks/" + id))
                 .andExpect(status().isOk());
@@ -50,14 +51,18 @@ public class TaskIntegrationTest extends IntegrationTest {
     @Test
     void updateTask() throws Exception {
         TaskPostRequest taskPostRequest = new TaskPostRequest(mockMvc, objectMapper);
-        Task task = taskPostRequest.postTask("Test Task");
-        Long id = task.getId();
+        TaskResponseDTO task = taskPostRequest.postTask("Test Task");
+        Long id = task.id();
 
-        task.setTitle("Updated Title");
+        TaskRequestDTO dto = new TaskRequestDTO(
+                "Updated Title",
+                task.description(),
+                task.deadline()
+        );
 
         mockMvc.perform(put("/api/tasks/" + id)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(task)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Updated Title"));
     }
@@ -65,8 +70,8 @@ public class TaskIntegrationTest extends IntegrationTest {
     @Test
     void deleteTask() throws Exception {
         TaskPostRequest taskPostRequest = new TaskPostRequest(mockMvc, objectMapper);
-        Task task = taskPostRequest.postTask("Test Task");
-        Long id = task.getId();
+        TaskResponseDTO task = taskPostRequest.postTask("Test Task");
+        Long id = task.id();
 
         mockMvc.perform(delete("/api/tasks/" + id))
                 .andExpect(status().isOk());

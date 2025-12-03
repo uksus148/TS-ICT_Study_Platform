@@ -1,6 +1,5 @@
 package org.application.tsiktsemestraljob.demo.Controller;
 
-
 import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.demo.Entities.ActivityLogs;
 import org.application.tsiktsemestraljob.demo.Service.ActivityLogsService;

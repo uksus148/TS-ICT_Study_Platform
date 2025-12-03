@@ -3,6 +3,9 @@ package org.application.tsiktsemestraljob.Resources;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.application.tsiktsemestraljob.IntegrationTest;
+import org.application.tsiktsemestraljob.demo.DTO.ResourcesDTO.ResourcesRequestDTO;
+import org.application.tsiktsemestraljob.demo.DTO.ResourcesDTO.ResourcesResponseDTO;
+import org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO.StudyGroupsRequestDTO;
 import org.application.tsiktsemestraljob.demo.Entities.Resources;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,8 +37,8 @@ public class ResourcesIntegrationTest extends IntegrationTest {
     @Test
     void getResourceById() throws Exception {
         ResourcePostRequest resourcePostRequest = new ResourcePostRequest(mockMvc, objectMapper);
-        Resources resource = resourcePostRequest.postResource("Test Resource");
-        Long id = resource.getId();
+        ResourcesResponseDTO resource = resourcePostRequest.postResource("Test Resource");
+        Long id = resource.id();
 
         mockMvc.perform(get("/api/resources/" + id)).andExpect(status().isOk());
     }
@@ -43,28 +46,29 @@ public class ResourcesIntegrationTest extends IntegrationTest {
     @Test
     void createResource() throws Exception {
         ResourcePostRequest resourcePostRequest = new ResourcePostRequest(mockMvc, objectMapper);
-        Resources resource = resourcePostRequest.postResource("Test Resource");
+        ResourcesResponseDTO resource = resourcePostRequest.postResource("Test Resource");
     }
 
     @Test
     void updateResource() throws Exception {
         ResourcePostRequest resourcePostRequest = new ResourcePostRequest(mockMvc, objectMapper);
-        Resources resource = resourcePostRequest.postResource("Test Resource");
-        Long id = resource.getId();
+        ResourcesResponseDTO resource = resourcePostRequest.postResource("Test Resource");
+        Long id = resource.id();
 
-        resource.setTitle("Second Resource");
+        ResourcesRequestDTO dto = new ResourcesRequestDTO("newname", null, null);
+
         mockMvc.perform(put("/api/resources/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(resource)))
+                .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Second Resource"));
+                .andExpect(jsonPath("$.title").value("newname"));
     }
 
     @Test
     void deleteResource() throws Exception {
         ResourcePostRequest resourcePostRequest = new ResourcePostRequest(mockMvc, objectMapper);
-        Resources resource = resourcePostRequest.postResource("Test Resource");
-        Long id = resource.getId();
+        ResourcesResponseDTO resource = resourcePostRequest.postResource("Test Resource");
+        Long id = resource.id();
 
         mockMvc.perform(delete("/api/resources/" + id)).andExpect(status().isOk());
     }

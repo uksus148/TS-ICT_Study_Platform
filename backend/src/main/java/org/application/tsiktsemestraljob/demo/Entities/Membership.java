@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @Entity(name = "memberships")
@@ -25,6 +27,11 @@ public class Membership {
     @Column(name = "role")
     private String role;
 
+    @PrePersist
+    protected void onCreate() {
+        this.joinedAt = LocalDate.now();
+    }
+
     @Column(name = "joined_at")
-    private Timestamp joinedAt;
+    private LocalDate joinedAt;
 }

@@ -19,7 +19,6 @@ public class StudyGroupsService {
     public StudyGroups create(Long userId ,StudyGroups group) {
         User creator = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found with id " + userId));
         group.setCreatedBy(creator);
-        group.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         return studyGroupsRepository.save(group);
     }
 
@@ -37,7 +36,6 @@ public class StudyGroupsService {
         if(newStudyGroups.getName() != null) {studyGroups.setName(newStudyGroups.getName());}
         if(newStudyGroups.getCreatedBy() != null) {studyGroups.setCreatedBy(newStudyGroups.getCreatedBy());}
         if(newStudyGroups.getDescription() != null) {studyGroups.setDescription(newStudyGroups.getDescription());}
-        if(newStudyGroups.getCreatedAt() != null) {studyGroups.setCreatedAt(new Timestamp(System.currentTimeMillis()));}
         return studyGroupsRepository.save(studyGroups);
     }
 

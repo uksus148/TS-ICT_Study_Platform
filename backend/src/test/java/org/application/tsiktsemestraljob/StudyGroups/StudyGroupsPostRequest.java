@@ -5,6 +5,9 @@ package org.application.tsiktsemestraljob.StudyGroups;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.User.UserPostRequest;
+import org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO.StudyGroupsRequestDTO;
+import org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO.StudyGroupsResponseDTO;
+import org.application.tsiktsemestraljob.demo.DTO.TaskDTO.TaskRequestDTO;
 import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
 import org.application.tsiktsemestraljob.demo.Entities.User;
 import org.springframework.http.MediaType;
@@ -17,19 +20,21 @@ public class StudyGroupsPostRequest {
     private final MockMvc mockMvc;
     private final ObjectMapper objectMapper;
 
-    public StudyGroups postGroup(String name) throws Exception {
+    public StudyGroupsResponseDTO postGroup(String name) throws Exception {
         UserPostRequest userPostRequest = new UserPostRequest(mockMvc, objectMapper);
         User user = userPostRequest.postUser("testuserr", "email");
         Long id = user.getId();
 
-        StudyGroups studyGroup = new StudyGroups();
-        studyGroup.setName(name);
+        StudyGroupsRequestDTO dto = new StudyGroupsRequestDTO(
+                name,
+                null
+        );
 
         String response = mockMvc.perform(post("/api/studyGroups/" + id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(studyGroup)))
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andReturn().getResponse().getContentAsString();
-        return objectMapper.readValue(response, StudyGroups.class);
+        return objectMapper.readValue(response, StudyGroupsResponseDTO.class);
     }
 
 }
