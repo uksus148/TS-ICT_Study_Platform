@@ -4,45 +4,44 @@ import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.demo.Entities.Membership;
 import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
 import org.application.tsiktsemestraljob.demo.Entities.User;
+import org.application.tsiktsemestraljob.demo.Enums.MembershipRole;
 import org.application.tsiktsemestraljob.demo.Repository.MembershipsRepository;
 import org.application.tsiktsemestraljob.demo.Repository.StudyGroupsRepository;
 import org.application.tsiktsemestraljob.demo.Repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class MembershipService {
-    private final MembershipsRepository membershipsRepository;
-    private final StudyGroupsRepository studyGroupsRepository;
-    private final UserRepository userRepository;
+    private final MembershipsRepository membershipRepository;
 
-    public Membership create(Long userId, Long groupId, Membership membership) {
-        User creator = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found with id " + userId));
-        StudyGroups studyGroup = studyGroupsRepository.findById(groupId).orElseThrow(() -> new IllegalArgumentException("StudyGroup not found with id " + groupId));
 
-        membership.setStudyGroup(studyGroup);
-        membership.setUser(creator);
+    @Transactional
+    public Membership addMember(User user, StudyGroups group, MembershipRole role) {
+        if (membershipRepository.existsByUserIdAndStudyGroupGroupId(user.getId(), group.getGroupId())) {
+            return membershipRepository.findByUserIdAndStudyGroupGroupId(user.getId(), group.getGroupId())
+                    .orElseThrow();
+        }
 
-        return membershipsRepository.save(membership);
+        Membership m = new Membership();
+        m.setUser(user);
+        m.setStudyGroup(group);
+        m.setMembershipRole(role);
+
+        return membershipRepository.save(m);
     }
 
-    public void deleteById(Long id) {
-        membershipsRepository.deleteById(id);
+    public boolean isMember(Long userId, Long groupId) {
+        return membershipRepository.existsByUserIdAndStudyGroupGroupId(userId, groupId);
     }
 
-    public List<Membership> findAll() {
-        return membershipsRepository.findAll();
-    }
-
-    public Membership findById(Long id) {
-        return membershipsRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Membership not found"));
-    }
-
-    public Membership update(Long id , Membership membership) {
-        Membership oldMembership = membershipsRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Membership not found"));
-        if(membership.getRole() != null) {oldMembership.setRole(membership.getRole());}
-        return membershipsRepository.save(oldMembership);
+    public boolean isOwner(Long userId, Long groupId) {
+        return membershipRepository.findByUserIdAndStudyGroupGroupId(userId, groupId)
+                .map(m -> m.getMembershipRole() == MembershipRole.OWNER)
+                .orElse(false);
     }
 }

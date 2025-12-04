@@ -3,8 +3,8 @@ package org.application.tsiktsemestraljob.demo.Entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.application.tsiktsemestraljob.demo.Enums.MembershipRole;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 
 @Getter
@@ -24,8 +24,8 @@ public class Membership {
     @JoinColumn(name = "group_id")
     private StudyGroups studyGroup;
 
-    @Column(name = "role")
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private MembershipRole membershipRole;
 
     @PrePersist
     protected void onCreate() {
