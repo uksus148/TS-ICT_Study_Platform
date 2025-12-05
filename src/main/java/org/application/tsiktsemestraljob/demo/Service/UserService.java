@@ -3,6 +3,10 @@ package org.application.tsiktsemestraljob.demo.Service;
 import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.demo.Entities.User;
 import org.application.tsiktsemestraljob.demo.Repository.UserRepository;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -10,8 +14,28 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return org.springframework.security.core.userdetails.User
+                .withUsername(user.getEmail())
+                .password(user.getPasswordHash())
+                .authorities("USER") // роли можно расширить
+                .build();
+    }
+
+    public User register(String name, String email, String rawPassword) {
+        User user = new User();
+        user.setName(name);
+        user.setEmail(email);
+        user.setPasswordHash(new BCryptPasswordEncoder().encode(rawPassword));
+        return userRepository.save(user);
+    }
 
     public User createUser(User user) {
         return userRepository.save(user);
