@@ -8,6 +8,8 @@ import org.springframework.boot.autoconfigure.batch.BatchProperties;
 
 import javax.management.relation.Role;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -30,11 +32,22 @@ public class User {
     @JsonProperty("password")
     private String passwordHash;
 
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDate.now();
+        this.updatedAt = LocalDate.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDate.now();
+    }
+
     @Column(name = "created_at")
-    private Timestamp createdAt = new Timestamp(System.currentTimeMillis());
+    private LocalDate createdAt;
 
     @Column(name = "updated_at")
-    private Timestamp updatedAt = new Timestamp(System.currentTimeMillis());
+    private LocalDate updatedAt;
 
     @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StudyGroups> studyGroups;

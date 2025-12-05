@@ -3,8 +3,11 @@ package org.application.tsiktsemestraljob.demo.Entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.application.tsiktsemestraljob.demo.Enums.TaskStatus;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity(name = "tasks")
@@ -28,12 +31,18 @@ public class Task {
     @Column
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column
-    private String status;
+    private TaskStatus status;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDate.now();
+    }
 
     @Column
-    private Timestamp deadline;
+    private LocalDateTime deadline;
 
     @Column(name = "created_at")
-    private Timestamp createdAt;
+    private LocalDate createdAt;
 }

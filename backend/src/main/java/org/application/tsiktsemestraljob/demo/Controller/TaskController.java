@@ -3,6 +3,9 @@ package org.application.tsiktsemestraljob.demo.Controller;
 import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.demo.Entities.Task;
 import org.application.tsiktsemestraljob.demo.Service.TaskService;
+import org.application.tsiktsemestraljob.demo.DTO.TaskDTO.TaskMapper;
+import org.application.tsiktsemestraljob.demo.DTO.TaskDTO.TaskRequestDTO;
+import org.application.tsiktsemestraljob.demo.DTO.TaskDTO.TaskResponseDTO;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,27 +17,33 @@ public class TaskController {
     private final TaskService taskService;
 
     @GetMapping
-    public List<Task> getTasks() {
-        return taskService.getAllTasks();
+    public List<TaskResponseDTO> getTasks() {
+        return taskService.getAllTasks()
+                .stream()
+                .map(TaskMapper::toDto)
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public Task getTask(@PathVariable Long id) {
-        return taskService.getTaskById(id);
+    public TaskResponseDTO getTask(@PathVariable Long id) {
+        Task task = taskService.getTaskById(id);
+        return TaskMapper.toDto(task);
     }
 
     @PostMapping("/{userId}/{groupId}")
-    public Task createTask(@PathVariable Long userId, @PathVariable Long groupId ,@RequestBody Task task) {
-        return taskService.createTask(userId, groupId, task);
+    public TaskResponseDTO createTask(@PathVariable Long userId, @PathVariable Long groupId ,@RequestBody TaskRequestDTO dto) {
+        Task task = taskService.createTask(userId, groupId, TaskMapper.toEntity(dto));
+        return TaskMapper.toDto(task);
     }
 
     @PutMapping("/{id}")
-    public Task updateTask(@PathVariable Long id, @RequestBody Task task) {
-        return taskService.updateTask(id, task);
+    public TaskResponseDTO updateTask(@PathVariable Long id, @RequestBody TaskRequestDTO dto) {
+        Task newTask = taskService.updateTask(id, TaskMapper.toEntity(dto));
+        return TaskMapper.toDto(newTask);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteTask(@PathVariable Long id) {
-        taskService.deleteTask(id);
+    @DeleteMapping("/{id}/{userId}")
+    public void deleteTask(@PathVariable Long id, @PathVariable Long userId) {
+        taskService.deleteTask(id, userId);
     }
 }

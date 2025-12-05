@@ -3,8 +3,10 @@ package org.application.tsiktsemestraljob.demo.Entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.application.tsiktsemestraljob.demo.Enums.MembershipRole;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @Entity(name = "memberships")
@@ -22,9 +24,14 @@ public class Membership {
     @JoinColumn(name = "group_id")
     private StudyGroups studyGroup;
 
-    @Column(name = "role")
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private MembershipRole membershipRole;
+
+    @PrePersist
+    protected void onCreate() {
+        this.joinedAt = LocalDate.now();
+    }
 
     @Column(name = "joined_at")
-    private Timestamp joinedAt;
+    private LocalDate joinedAt;
 }

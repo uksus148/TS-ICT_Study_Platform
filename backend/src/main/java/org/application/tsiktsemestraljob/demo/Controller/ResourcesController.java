@@ -1,13 +1,14 @@
 package org.application.tsiktsemestraljob.demo.Controller;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.application.tsiktsemestraljob.demo.DTO.ResourcesDTO.ResourcesMapper;
+import org.application.tsiktsemestraljob.demo.DTO.ResourcesDTO.ResourcesRequestDTO;
+import org.application.tsiktsemestraljob.demo.DTO.ResourcesDTO.ResourcesResponseDTO;
 import org.application.tsiktsemestraljob.demo.Entities.Resources;
 import org.application.tsiktsemestraljob.demo.Service.ResourcesService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/resources")
@@ -16,18 +17,23 @@ public class ResourcesController {
     private final ResourcesService resourcesService;
 
    @GetMapping
-    public List<Resources> findAll() {
-       return resourcesService.findAll();
+    public List<ResourcesResponseDTO> findAll() {
+       return resourcesService.findAll()
+               .stream()
+               .map(ResourcesMapper::toDto)
+               .toList();
    }
 
    @GetMapping("/{id}")
-    public Resources findById(@PathVariable Long id) {
-       return resourcesService.findById(id);
+    public ResourcesResponseDTO findById(@PathVariable Long id) {
+       Resources resources = resourcesService.findById(id);
+       return ResourcesMapper.toDto(resources);
    }
 
    @PostMapping("/{userId}/{groupId}")
-    public Resources create(@PathVariable Long userId, @PathVariable Long groupId, @RequestBody Resources resources) {
-       return resourcesService.create(userId, groupId, resources);
+    public ResourcesResponseDTO create(@PathVariable Long userId, @PathVariable Long groupId, @RequestBody ResourcesRequestDTO dto) {
+       Resources resources = ResourcesMapper.toEntity(dto);
+       return ResourcesMapper.toDto(resourcesService.create(userId, groupId, resources));
    }
 
    @DeleteMapping("/{id}")
@@ -36,7 +42,8 @@ public class ResourcesController {
    }
 
    @PutMapping("/{id}")
-    public Resources update(@PathVariable Long id, @RequestBody Resources resources) {
-       return resourcesService.update(id, resources);
+    public ResourcesResponseDTO update(@PathVariable Long id, @RequestBody ResourcesRequestDTO dto) {
+       Resources resources = ResourcesMapper.toEntity(dto);
+       return ResourcesMapper.toDto(resourcesService.update(id, resources));
    }
 }

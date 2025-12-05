@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.application.tsiktsemestraljob.IntegrationTest;
 import org.application.tsiktsemestraljob.User.UserPostRequest;
+import org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO.StudyGroupsRequestDTO;
+import org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO.StudyGroupsResponseDTO;
 import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
 import org.application.tsiktsemestraljob.demo.Entities.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,8 +63,8 @@ class StudyGroupsIntegrationTest extends IntegrationTest {
     @Test
     void testDeleteStudyGroup() throws Exception {
         StudyGroupsPostRequest studyGroupsPostRequest = new StudyGroupsPostRequest(mockMvc, objectMapper);
-        StudyGroups studyGroup = studyGroupsPostRequest.postGroup("testgroup");
-        Long id = studyGroup.getGroupId();
+        StudyGroupsResponseDTO dto = studyGroupsPostRequest.postGroup("testgroup");
+        Long id = dto.id();
 
         mockMvc.perform(delete("/api/studyGroups/" + id))
                 .andExpect(status().isOk());
@@ -71,28 +73,26 @@ class StudyGroupsIntegrationTest extends IntegrationTest {
 
     @Test
     void testUpdateStudyGroup() throws Exception {
-        User userWithId = userPostRequest.postUser("testmail", "testname");
-        Long id = userWithId.getId();
+        StudyGroupsResponseDTO created = studyGroupsPostRequest.postGroup("oldname");
+        Long groupId = created.id();
 
-        StudyGroups updateStudyGroup = studyGroupsPostRequest.postGroup("testgroup");
-        updateStudyGroup.setName("testgroup2");
-        Long groupId = updateStudyGroup.getGroupId();
+        StudyGroupsRequestDTO updateDto =
+                new StudyGroupsRequestDTO("newname", null);
 
         mockMvc.perform(put("/api/studyGroups/" + groupId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateStudyGroup)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("testgroup2"));
+                .andExpect(jsonPath("$.name").value("newname"));
     }
 
     @Test
     void testGetStudyGroupById() throws Exception {
-        StudyGroups studyGroup = studyGroupsPostRequest.postGroup("testgroup");
-        Long id = studyGroup.getGroupId();
+        StudyGroupsResponseDTO dto = studyGroupsPostRequest.postGroup("testgroup");
+        Long id = dto.id();
 
         mockMvc.perform(get("/api/studyGroups/" + id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("testgroup"));
-
     }
 }
