@@ -17,13 +17,20 @@ public class TaskService {
     private final TaskRepository repository;
     private final UserRepository userRepository;
     private final StudyGroupsRepository studyGroupsRepository;
+    private final ActivityLogsService activityLogsService;
 
     public Task createTask(Long userId, Long groupId, Task task) {
         User creator = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found with id " + userId));
         StudyGroups studyGroup = studyGroupsRepository.findById(groupId).orElseThrow(() -> new IllegalArgumentException("StudyGroup not found with id " + groupId));
         task.setCreatedBy(creator);
         task.setStudyGroup(studyGroup);
-        return repository.save(task);
+
+        Task saved = repository.save(task);
+        activityLogsService.log(creator,
+                "CREATE_TASK",
+                "TASK-ID : " + saved.getId());
+
+        return saved;
     }
 
     public Task getTaskById(Long id) {
@@ -47,8 +54,24 @@ public class TaskService {
         return repository.save(taskToUpdate);
     }
 
-    public void deleteTask(Long id) {
-        repository.deleteById(id);
+    public void deleteTask(Long taskId, Long userId) {
+        Task task = repository.findById(taskId).orElse(null);
+        if (task == null) {throw new IllegalArgumentException("Task not found");}
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found with id " + userId));
+
+        boolean isTaskCreator = task.getCreatedBy().getId().equals(userId);
+        boolean isGroupCreator = task.getStudyGroup().getCreatedBy().getId().equals(userId);
+
+        if (!isTaskCreator && !isGroupCreator) {
+            throw new IllegalArgumentException("User has no rights to delete this task");
+        }
+
+        activityLogsService.log(user,
+                "TASK_DELETED",
+                "TASK-ID: " + taskId);
+
+        repository.deleteById(taskId);
     }
 
 }

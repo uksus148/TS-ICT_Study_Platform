@@ -18,6 +18,7 @@ public class ResourcesService {
     private final ResourcesRepository resourcesRepository;
     private final StudyGroupsRepository studyGroupsRepository;
     private final UserRepository userRepository;
+    private final ActivityLogsService activityLogsService;
 
     public List<Resources> findAll() {
         return resourcesRepository.findAll();
@@ -29,7 +30,12 @@ public class ResourcesService {
 
         resources.setStudyGroup(studyGroup);
         resources.setUploadedBy(creator);
-        return resourcesRepository.save(resources);
+        Resources saved = resourcesRepository.save(resources);
+
+        activityLogsService.log(creator,
+                "RESOURCE_CREATED",
+                "RESOURCE-ID: " + saved.getId());
+        return saved;
     }
 
     public Resources findById(Long id) {

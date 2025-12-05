@@ -19,6 +19,7 @@ public class StudyGroupsService {
     private final StudyGroupsRepository studyGroupsRepository;
     private final UserRepository userRepository;
     private final MembershipService membershipService;
+    private final ActivityLogsService activityLogsService;
 
     public StudyGroups create(Long userId ,StudyGroups group) {
         User creator = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found with id " + userId));
@@ -26,8 +27,14 @@ public class StudyGroupsService {
 
         StudyGroups finalGroup = studyGroupsRepository.save(group);
         membershipService.addMember(creator, finalGroup, MembershipRole.OWNER);
+
+        activityLogsService.log(creator,
+                "CREATE_StudyGroup",
+                "STUDYGROUP-ID: " + finalGroup.getGroupId());
+
         return finalGroup;
     }
+
     @Transactional
     public void joinGroup(Long groupId, Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found with id " + userId));

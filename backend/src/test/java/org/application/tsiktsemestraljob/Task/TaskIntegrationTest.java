@@ -3,8 +3,10 @@ package org.application.tsiktsemestraljob.Task;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.application.tsiktsemestraljob.IntegrationTest;
+import org.application.tsiktsemestraljob.User.UserPostRequest;
 import org.application.tsiktsemestraljob.demo.DTO.TaskDTO.TaskRequestDTO;
 import org.application.tsiktsemestraljob.demo.DTO.TaskDTO.TaskResponseDTO;
+import org.application.tsiktsemestraljob.demo.Entities.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -73,7 +75,9 @@ public class TaskIntegrationTest extends IntegrationTest {
         TaskResponseDTO task = taskPostRequest.postTask("Test Task");
         Long id = task.id();
 
-        mockMvc.perform(delete("/api/tasks/" + id))
+        Long userId = task.createdBy();
+
+        mockMvc.perform(delete("/api/tasks/" + id + "/" + userId))
                 .andExpect(status().isOk());
     }
 }

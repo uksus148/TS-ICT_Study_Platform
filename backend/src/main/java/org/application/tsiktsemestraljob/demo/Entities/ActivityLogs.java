@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -28,4 +29,9 @@ public class ActivityLogs {
 
     @Column
     private String details;
+
+    @PrePersist
+    protected void onCreate() {
+        timestamp = LocalDate.now();
+    }
 }

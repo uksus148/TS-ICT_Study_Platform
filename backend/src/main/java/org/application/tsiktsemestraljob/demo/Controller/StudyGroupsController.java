@@ -42,7 +42,7 @@ public class StudyGroupsController {
         return StudyGroupsMapper.toDto(saveGroup);
     }
 
-    @DeleteMapping("/{id}{userId}")
+    @DeleteMapping("/{id}/{userId}")
     public void delete(@PathVariable Long id, @RequestParam Long userId) {
         try {
         studyGroupsService.deleteGroup(id, userId); }
