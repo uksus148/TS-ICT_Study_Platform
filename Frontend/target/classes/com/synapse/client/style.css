@@ -1,0 +1,262 @@
+@font-face {
+    font-family: 'Lexend Deca'; /* Имя шрифта */
+    font-weight: normal;       /* Говорим, что это ОБЫЧНОЕ начертание */
+    src: url('fonts/LexendDeca-Regular.ttf'); /* Путь к файлу */
+}
+
+/* 2. Загружаем ЖИРНОЕ начертание */
+@font-face {
+    font-family: 'Lexend Deca'; /* То же самое имя! */
+    font-weight: bold;         /* Говорим, что это ЖИРНОЕ начертание */
+    src: url('fonts/LexendDeca-Bold.ttf'); /* Путь к файлу */
+}
+
+@font-face {
+    font-family: 'Roboto'; /* Имя шрифта */
+    font-weight: normal;       /* Говорим, что это ОБЫЧНОЕ начертание */
+    src: url('fonts/Roboto-Regular.ttf'); /* Путь к файлу */
+}
+
+/* 2. Загружаем ЖИРНОЕ начертание */
+@font-face {
+    font-family: 'Roboto'; /* То же самое имя! */
+    font-weight: bold;         /* Говорим, что это ЖИРНОЕ начертание */
+    src: url('fonts/Roboto-Bold.ttf');
+}
+
+.root {
+    -fx-font-family: "Lexend Deca";
+    -fx-font-size: 14px;
+    -fx-font-smoothing-type: lcd;
+}
+
+.main {
+    -fx-padding: 20px;
+    -fx-background-color: #fff;
+}
+
+.sidebar {
+    -fx-border-radius: 16px;
+    -fx-background-radius: 16px;
+    -fx-background-color: rgb(244, 244, 244);
+    -fx-padding: 20px;
+    -fx-border-width: 0;
+    -fx-spacing: 15px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 0);
+}
+
+.sidebar-top {
+    -fx-alignment: between;
+}
+
+.sidebar-toogle {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+}
+
+/* Базовый стиль для контентной области */
+.content-area {
+    -fx-background-color: #ffffff; /* Белый фон */
+    -fx-padding: 0 25px 25px 25px; /* Внутренние отступы */
+    -fx-spacing: 10px; /* Расстояние между элементами в VBox */
+}
+
+/* Стиль для всех Label по умолчанию */
+.label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #333333; /* Темно-серый текст */
+}
+
+.sidebar-search {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 0);
+    -fx-border-width: 1px;
+    -fx-border-color: rgb(235, 235, 235);
+    -fx-alignment: center;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+}
+
+.search-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 16px;
+    -fx-text-fill: rgb(3,3,3);
+    -fx-prompt-text-fill: #7c7c7cff;
+    -fx-padding: 4px 10px 4px 35px;
+}
+
+/* Заголовки секций (TASKS, LISTS) */
+.section-header {
+    -fx-font-size: 12px;
+    -fx-text-fill: #444444ff; /* Серый цвет */
+    -fx-font-weight: bold;
+}
+
+/* Стиль для кнопок-ссылок.
+  Мы "обнуляем" стандартный вид кнопки, чтобы она была похожа на текст.
+*/
+.sidebar-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 14px;
+    -fx-text-fill: #333333;
+    -fx-alignment: CENTER_LEFT; /* Текст по левому краю */
+    -fx-padding: 8px 10px; /* Отступы для удобного нажатия */
+    -fx-background-radius: 5px; /* Легкое скругление для hover */
+    -fx-cursor: hand; /* Поменять курсор на "руку" при наведении */
+}
+
+/* Стиль для HBox, который ведет себя как кнопка (Today 5) */
+.sidebar-button-hbox {
+    -fx-background-color: transparent;
+    -fx-padding: 8px 10px;
+    -fx-background-radius: 5px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: hand;
+}
+
+.sidebar-button-hbox Label {
+    -fx-padding: 0 0 0 10px;
+}
+
+/* Эффект при наведении мыши */
+.sidebar-button:hover, .sidebar-button-hbox:hover {
+    -fx-background-color: #f0f0f0; /* Легкий серый фон */
+}
+
+/* Элемент счетчика ("5") */
+.task-count {
+    -fx-background-color: #e8e8e8; /* Серый фон */
+    -fx-background-radius: 6px; /* Круглые углы */
+    -fx-padding: 2px 7px; /* Маленькие отступы */
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #555555;
+}
+
+.add-task-button {
+    -fx-background-color: #1a1a1a; /* Темный фон */
+    -fx-text-fill: #ffffff; /* Белый текст */
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 16px;
+    -fx-background-radius: 8px; /* Скругленные углы */
+    -fx-cursor: hand;
+}
+
+.add-task-button:hover {
+    -fx-background-color: #333333; /* Чуть светлее при наведении */
+}
+
+/* * Стиль для ListView.
+ * "Обнуляем" стандартный вид, убираем рамку и фон.
+ */
+.task-list-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.task-list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 5px; /* Больше отступ сверху/снизу */
+    -fx-border-color: #f0f0f0; /* Светло-серая линия-разделитель */
+    -fx-border-width: 0 0 1px 0; /* Только нижняя граница */
+    -fx-min-height: 40px;
+}
+
+.task-list-view .list-cell:hover {
+    -fx-background-color: transparent;
+}
+
+.task-list-view .list-cell:filled:selected {
+    -fx-background-color: transparent;
+}
+
+/* Стили для текста внутри ячейки */
+.task-title {
+    -fx-font-size: 16px;
+    -fx-line-spacing: 24px;
+    -fx-text-fill: #444444ff;
+}
+
+.task-deadline {
+    -fx-font-size: 12px;
+    -fx-text-fill: #444444ff; /* Серый */
+}
+
+.task-checkbox {
+    -fx-text-fill: transparent; /* Скрываем текст, если он есть */
+    -fx-translate-y: 3px;
+}
+
+/* * 2. Стилизуем ".box" - это сам контейнер (квадратик)
+ * Это стиль для НЕ ВЫБРАННОГО состояния.
+ */
+.task-checkbox .box {
+    /* Форма и размер */
+    -fx-pref-width: 16px;
+    -fx-pref-height: 16px;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 0);
+
+    /* Убираем стандартный фон */
+    -fx-background-color: rgba(235, 235, 235, 0);
+
+    /* Рисуем нашу рамку */
+    -fx-border-color: rgb(221, 221, 221);
+    -fx-border-width: 1px;
+}
+
+/* * 3. Убираем стандартную "галочку" (mark)
+ */
+.task-checkbox .mark {
+    -fx-background-color: transparent; /* Прячем ее */
+    -fx-padding: 0; /* Обнуляем отступы */
+}
+
+/* * 4. Стиль для ВЫБРАННОГО состояния (:selected)
+ * Стилизуем .box, когда чекбокс нажат.
+ */
+.task-checkbox:selected .box {
+    -fx-background-color: rgb(124, 124, 124); /* Яркий синий фон (или любой другой) */
+    -fx-border-color: transparent; /* Рамка больше не нужна */
+}
+
+/* * 5. Рисуем НАШУ "галочку" (mark)
+ * Мы используем SVG-путь, чтобы нарисовать галочку
+ * Она будет белой (-fx-background-color: white)
+ */
+.task-checkbox:selected .mark {
+    -fx-background-color: white; /* Цвет галочки */
+
+    /* * Это "волшебная" SVG-строка, которая рисует галочку.
+     * Не бойся ее, просто скопируй.
+     */
+    -fx-shape: "M 1.7314453,7.0605469 4.875,10.203125 11.268555,3.8095703 12.212891,4.7539062 4.875,12.091797 0.78710938,8.0039062 Z";
+
+    /* Центруем и уменьшаем ее */
+    -fx-scale-x: 0.8;
+    -fx-scale-y: 0.8;
+}
+
+/* 6. Эффект при наведении (необязательно, но приятно) */
+.task-checkbox .box:hover {
+    -fx-border-color: rgb(124, 124, 124); /* Подсвечиваем рамку синим */
+}
+
+.content-count {
+    -fx-background-color: rgba(221, 221, 221, 0);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 0);
+    -fx-border-width: 1px;
+    -fx-border-color: rgb(235, 235, 235);
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-min-width: 48px;
+    -fx-alignment: center;
+    -fx-font-size: 40px;
+    -fx-font-weight: bold;
+    -fx-text-fill: rgb(33, 37, 41);
+    -fx-line-spacing: 40px;
+}
