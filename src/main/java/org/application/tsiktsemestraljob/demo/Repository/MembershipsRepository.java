@@ -13,7 +13,7 @@ public interface MembershipsRepository extends JpaRepository<Membership, Long> {
 
     Optional<Membership> findByUserIdAndStudyGroupGroupId(Long userId, Long groupId);
 
-    List<Membership> findByUserId(Long userId);
+    List<Membership> findAllByUserId(Long userId);
 
-    List<Membership> findByStudyGroupGroupId(Long groupId);
+    List<Membership> findAllByStudyGroupGroupId(Long groupId);
 }

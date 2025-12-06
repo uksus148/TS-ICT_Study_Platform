@@ -7,25 +7,27 @@ import org.application.tsiktsemestraljob.demo.Entities.User;
 import org.application.tsiktsemestraljob.demo.Repository.ResourcesRepository;
 import org.application.tsiktsemestraljob.demo.Repository.StudyGroupsRepository;
 import org.application.tsiktsemestraljob.demo.Repository.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess.CurrentUser.getCurrentUser;
 
 @Service
 @RequiredArgsConstructor
 public class ResourcesService {
     private final ResourcesRepository resourcesRepository;
     private final StudyGroupsRepository studyGroupsRepository;
-    private final UserRepository userRepository;
     private final ActivityLogsService activityLogsService;
 
     public List<Resources> findAll() {
         return resourcesRepository.findAll();
     }
 
-    public Resources create(Long userId, Long groupId, Resources resources) {
-        User creator = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found with id " + userId));
+    public Resources create(Long groupId, Resources resources) {
+        User creator = getCurrentUser();
         StudyGroups studyGroup = studyGroupsRepository.findById(groupId).orElseThrow(() -> new IllegalArgumentException("StudyGroup not found with id " + groupId));
 
         resources.setStudyGroup(studyGroup);
@@ -44,16 +46,37 @@ public class ResourcesService {
     }
 
     public Resources update(Long id, Resources resources) {
+        User currentUser = getCurrentUser();
        Resources oldResources = resourcesRepository.findById(id).orElse(null);
        if (oldResources == null) {throw new IllegalArgumentException("Resources not found");}
+
+       if(!oldResources.getUploadedBy().equals(currentUser)) {
+           throw new AccessDeniedException("You are not owner of this resource");
+       }
+
            if(resources.getPathOrUrl() != null) {oldResources.setPathOrUrl(resources.getPathOrUrl());}
            if(resources.getType() != null) {oldResources.setType(resources.getType());}
            oldResources.setTitle(resources.getTitle());
            if(resources.getUploadedAt() != null) {oldResources.setUploadedAt(resources.getUploadedAt());}
+
+           activityLogsService.log(currentUser,
+                   "UPDATE_RESOURCE"
+           , "RESOURCE-ID: " + oldResources.getId());
            return resourcesRepository.save(oldResources);
     }
 
     public void delete(Long id) {
+        User currentUser = getCurrentUser();
+        Resources resources = findById(id);
+
+        if(!resources.getUploadedBy().equals(currentUser)) {
+            throw new AccessDeniedException("You are not owner of this resource");
+        }
+
+        activityLogsService.log(currentUser,
+                "DELETE_RESOURCES"
+        , "RESOURCE-ID: " + resources.getId());
+
         resourcesRepository.deleteById(id);
     }
 }

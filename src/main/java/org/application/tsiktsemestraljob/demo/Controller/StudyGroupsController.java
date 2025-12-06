@@ -31,22 +31,20 @@ public class StudyGroupsController {
     }
 
     @PostMapping("/{groupId}/join")
-    public void joinGroup(@PathVariable Long groupId, @RequestParam Long userId) {
-        studyGroupsService.joinGroup(groupId, userId);
+    public void joinGroup(@PathVariable Long groupId) {
+        studyGroupsService.joinGroup(groupId);
     }
 
-    @PostMapping("/{id}")
-    public StudyGroupsResponseDTO create(@PathVariable Long id, @RequestBody StudyGroupsRequestDTO dto) {
+    @PostMapping()
+    public StudyGroupsResponseDTO create(@RequestBody StudyGroupsRequestDTO dto) {
         StudyGroups studyGroup = StudyGroupsMapper.toEntity(dto);
-        StudyGroups saveGroup = studyGroupsService.create(id, studyGroup);
+        StudyGroups saveGroup = studyGroupsService.create(studyGroup);
         return StudyGroupsMapper.toDto(saveGroup);
     }
 
-    @DeleteMapping("/{id}/{userId}")
-    public void delete(@PathVariable Long id, @RequestParam Long userId) {
-        try {
-        studyGroupsService.deleteGroup(id, userId); }
-        catch (Exception e) {}
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        studyGroupsService.deleteGroup(id);
     }
 
     @PutMapping("/{id}")

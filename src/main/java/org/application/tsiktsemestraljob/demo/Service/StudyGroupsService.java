@@ -1,17 +1,20 @@
 package org.application.tsiktsemestraljob.demo.Service;
 
 import lombok.RequiredArgsConstructor;
+import org.application.tsiktsemestraljob.demo.Entities.Membership;
 import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
 import org.application.tsiktsemestraljob.demo.Entities.User;
 import org.application.tsiktsemestraljob.demo.Enums.MembershipRole;
 import org.application.tsiktsemestraljob.demo.Repository.StudyGroupsRepository;
 import org.application.tsiktsemestraljob.demo.Repository.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.AccessDeniedException;
 import java.sql.Timestamp;
 import java.util.List;
+
+import static org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess.CurrentUser.getCurrentUser;
 
 @Service
 @RequiredArgsConstructor
@@ -21,8 +24,8 @@ public class StudyGroupsService {
     private final MembershipService membershipService;
     private final ActivityLogsService activityLogsService;
 
-    public StudyGroups create(Long userId ,StudyGroups group) {
-        User creator = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found with id " + userId));
+    public StudyGroups create(StudyGroups group) {
+        User creator = getCurrentUser();
         group.setCreatedBy(creator);
 
         StudyGroups finalGroup = studyGroupsRepository.save(group);
@@ -36,11 +39,16 @@ public class StudyGroupsService {
     }
 
     @Transactional
-    public void joinGroup(Long groupId, Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found with id " + userId));
+    public void joinGroup(Long groupId) {
+        User user = getCurrentUser();
         StudyGroups group = studyGroupsRepository.findById(groupId).orElseThrow(() -> new IllegalArgumentException("Group not found with id " + groupId));
 
         membershipService.addMember(user, group, MembershipRole.MEMBER);
+
+        activityLogsService.log(user,
+                "JOIN_GROUP",
+                "STUDYGROUP-ID: " + group.getGroupId()
+        );
     }
 
     public List<StudyGroups> getStudyGroups() {
@@ -48,19 +56,35 @@ public class StudyGroupsService {
     }
 
     @Transactional
-    public void deleteGroup(Long groupId, Long currentUserId) throws AccessDeniedException {
-        if (!membershipService.isOwner(currentUserId, groupId)) {
-            throw new AccessDeniedException("Only owner can delete group");
+    public void deleteGroup(Long groupId) {
+        User user = getCurrentUser();
+        if (!membershipService.isOwner(user.getId(), groupId)) {
+            throw new AccessDeniedException("Only owner of group can delete group");
         }
+
+        activityLogsService.log(user,
+                "DELETE_GROUP",
+                "STUDYGROUP-ID: " + groupId);
+
         studyGroupsRepository.deleteById(groupId);
     }
 
     public StudyGroups updateStudyGroups(Long id, StudyGroups newStudyGroups) {
+        User user = getCurrentUser();
+        if (!membershipService.isOwner(user.getId(), id)) {
+            throw new AccessDeniedException("Only owner of group can update group");
+        }
+
         StudyGroups studyGroups = studyGroupsRepository.findById(id).orElse(null);
         if (studyGroups == null) {throw new IllegalArgumentException("Study groups not found");}
         if(newStudyGroups.getName() != null) {studyGroups.setName(newStudyGroups.getName());}
         if(newStudyGroups.getCreatedBy() != null) {studyGroups.setCreatedBy(newStudyGroups.getCreatedBy());}
         if(newStudyGroups.getDescription() != null) {studyGroups.setDescription(newStudyGroups.getDescription());}
+
+        activityLogsService.log(user,
+                "UPDATE_GROUP",
+                "STUDYGROUP-ID: " + studyGroups.getGroupId());
+
         return studyGroupsRepository.save(studyGroups);
     }
 

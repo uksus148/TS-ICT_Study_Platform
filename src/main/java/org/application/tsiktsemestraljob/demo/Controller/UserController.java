@@ -30,16 +30,9 @@ public class UserController {
                 .toList();
     }
 
-    @PostMapping
-    public UserResponseDTO createUser(@RequestBody UserRequestDTO dto) {
-       User user = UserMapper.toEntity(dto);
-       User savedUser = userService.createUser(user);
-       return UserMapper.toDTO(savedUser);
-    }
-
-    @PutMapping("/{id}")
-    public UserResponseDTO updateUser(@PathVariable Long id, @RequestBody UserRequestDTO dto) {
-        User updatedUser = userService.updateUser(id, UserMapper.toEntity(dto));
+    @PutMapping()
+    public UserResponseDTO updateUser(@RequestBody UserRequestDTO dto) {
+        User updatedUser = userService.updateUser(UserMapper.toEntity(dto));
         return UserMapper.toDTO(updatedUser);
     }
 

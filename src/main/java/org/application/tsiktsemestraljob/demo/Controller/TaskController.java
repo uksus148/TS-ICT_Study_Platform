@@ -30,9 +30,9 @@ public class TaskController {
         return TaskMapper.toDto(task);
     }
 
-    @PostMapping("/{userId}/{groupId}")
-    public TaskResponseDTO createTask(@PathVariable Long userId, @PathVariable Long groupId ,@RequestBody TaskRequestDTO dto) {
-        Task task = taskService.createTask(userId, groupId, TaskMapper.toEntity(dto));
+    @PostMapping("/{groupId}")
+    public TaskResponseDTO createTask(@PathVariable Long groupId ,@RequestBody TaskRequestDTO dto) {
+        Task task = taskService.createTask(groupId, TaskMapper.toEntity(dto));
         return TaskMapper.toDto(task);
     }
 
@@ -42,8 +42,8 @@ public class TaskController {
         return TaskMapper.toDto(newTask);
     }
 
-    @DeleteMapping("/{id}/{userId}")
-    public void deleteTask(@PathVariable Long id, @PathVariable Long userId) {
-        taskService.deleteTask(id, userId);
+    @DeleteMapping("/{id}")
+    public void deleteTask(@PathVariable Long id) {
+        taskService.deleteTask(id);
     }
 }

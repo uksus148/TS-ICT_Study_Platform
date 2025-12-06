@@ -1,4 +1,4 @@
-package org.application.tsiktsemestraljob.demo.Authorization.AuthenticationContoller;
+package org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

@@ -30,10 +30,10 @@ public class ResourcesController {
        return ResourcesMapper.toDto(resources);
    }
 
-   @PostMapping("/{userId}/{groupId}")
-    public ResourcesResponseDTO create(@PathVariable Long userId, @PathVariable Long groupId, @RequestBody ResourcesRequestDTO dto) {
+   @PostMapping("/{groupId}")
+    public ResourcesResponseDTO create(@PathVariable Long groupId, @RequestBody ResourcesRequestDTO dto) {
        Resources resources = ResourcesMapper.toEntity(dto);
-       return ResourcesMapper.toDto(resourcesService.create(userId, groupId, resources));
+       return ResourcesMapper.toDto(resourcesService.create(groupId, resources));
    }
 
    @DeleteMapping("/{id}")

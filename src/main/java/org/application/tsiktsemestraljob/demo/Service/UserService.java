@@ -7,15 +7,19 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.List;
 
+import static org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess.CurrentUser.getCurrentUser;
+
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -25,7 +29,7 @@ public class UserService implements UserDetailsService {
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getEmail())
                 .password(user.getPasswordHash())
-                .authorities("USER") // роли можно расширить
+                .authorities("USER")
                 .build();
     }
 
@@ -34,10 +38,6 @@ public class UserService implements UserDetailsService {
         user.setName(name);
         user.setEmail(email);
         user.setPasswordHash(new BCryptPasswordEncoder().encode(rawPassword));
-        return userRepository.save(user);
-    }
-
-    public User createUser(User user) {
         return userRepository.save(user);
     }
 
@@ -50,12 +50,20 @@ public class UserService implements UserDetailsService {
         return userRepository.findAll();
     }
 
-    public void deleteUser(Long id) { userRepository.deleteById(id); }
+    public void deleteUser(Long id) {
+        User toDelete = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User current = getCurrentUser();
+        if (!current.getId().equals(id)) {
+            throw new SecurityException("You are not allowed to delete other users");
+        }
+        userRepository.delete(toDelete);
+    }
 
-    public User updateUser(Long id, User newUser) {
-        User existing = userRepository.findById(id).orElse(null);
+    public User updateUser(User newUser) {
+        User existing = getCurrentUser();
         if (existing == null) {
-            throw new IllegalArgumentException("User not found with id " + id);
+            throw new IllegalStateException("You must be logged to change your data");
         }
         if (newUser.getName() != null) {
             existing.setName(newUser.getName());
@@ -63,8 +71,8 @@ public class UserService implements UserDetailsService {
         if (newUser.getEmail() != null) {
             existing.setEmail(newUser.getEmail());
         }
-        if (newUser.getPasswordHash() != null) {
-            existing.setPasswordHash(newUser.getPasswordHash());
+        if (newUser.getPasswordHash() != null && !newUser.getPasswordHash().isBlank()) {
+            existing.setPasswordHash(passwordEncoder.encode(newUser.getPasswordHash()));
         }
         return userRepository.save(existing);
     }
