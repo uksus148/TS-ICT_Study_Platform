@@ -22,6 +22,7 @@ public class TaskService {
     private final StudyGroupsRepository studyGroupsRepository;
     private final ActivityLogsService activityLogsService;
     private final MembershipService membershipService;
+    private final NotificationService notificationService;
 
     public Task createTask(Long groupId, Task task) {
         User creator = getCurrentUser();
@@ -35,6 +36,9 @@ public class TaskService {
         task.setCreatedBy(creator);
         task.setStudyGroup(studyGroup);
         task.setStatus(TaskStatus.TODO);
+
+        notificationService.sendToGroup(task.getStudyGroup().getGroupId(),
+                "New task created: " + task.getTitle());
 
         Task saved = repository.save(task);
         activityLogsService.log(creator,
@@ -68,6 +72,9 @@ public class TaskService {
         taskToUpdate.setTitle(task.getTitle());
         taskToUpdate.setCreatedAt(task.getCreatedAt());
 
+        notificationService.sendToGroup(task.getStudyGroup().getGroupId(),
+                "New task created: " + task.getTitle());
+
         activityLogsService.log(creator,
                 "UPDATE_TASK"
         ,"TASK-ID : " + task.getId());
@@ -84,6 +91,9 @@ public class TaskService {
         if(!membershipService.isOwner(user.getId(), task.getStudyGroup().getGroupId())) {
             throw new AccessDeniedException("Only owner of group can remove tasks");
         }
+
+        notificationService.sendToGroup(task.getStudyGroup().getGroupId(),
+                "New task created: " + task.getTitle());
 
         activityLogsService.log(user,
                 "TASK_DELETED",

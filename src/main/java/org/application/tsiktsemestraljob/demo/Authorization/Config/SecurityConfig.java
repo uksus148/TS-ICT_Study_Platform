@@ -24,6 +24,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/ws/**", "/ws").permitAll()  // WebSocket + SockJS
+                        .requestMatchers("/topic/**", "/queue/**").permitAll() // broker channels
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())

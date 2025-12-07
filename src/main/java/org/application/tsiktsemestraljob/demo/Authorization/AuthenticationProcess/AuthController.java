@@ -35,7 +35,7 @@ public class AuthController {
         );
 
         SecurityContextHolder.getContext().setAuthentication(auth);
-        request.getSession(true);  // создаём сессию
+        request.getSession(true);
 
         return "Logged in";
     }
