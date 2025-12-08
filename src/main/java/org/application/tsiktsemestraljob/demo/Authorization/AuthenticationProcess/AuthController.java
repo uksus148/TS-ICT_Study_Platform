@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.demo.DTO.Authentication.LoginDTO;
 import org.application.tsiktsemestraljob.demo.DTO.Authentication.RegisterDTO;
+import org.application.tsiktsemestraljob.demo.Entities.User;
 import org.application.tsiktsemestraljob.demo.Service.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,9 +24,9 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public String register(@RequestBody RegisterDTO dto) {
-        userService.register(dto.name(), dto.email(), dto.password());
-        return "User registered";
+    public User register(@RequestBody RegisterDTO dto) {
+        User user = userService.register(dto.name(), dto.email(), dto.password());
+        return user;
     }
 
     @PostMapping("/login")

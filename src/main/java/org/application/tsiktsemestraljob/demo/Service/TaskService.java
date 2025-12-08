@@ -1,6 +1,7 @@
 package org.application.tsiktsemestraljob.demo.Service;
 
 import lombok.RequiredArgsConstructor;
+import org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess.CurrentUser;
 import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
 import org.application.tsiktsemestraljob.demo.Entities.Task;
 import org.application.tsiktsemestraljob.demo.Entities.User;
@@ -13,8 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess.CurrentUser.getCurrentUser;
-
 @Service
 @RequiredArgsConstructor
 public class TaskService {
@@ -23,9 +22,10 @@ public class TaskService {
     private final ActivityLogsService activityLogsService;
     private final MembershipService membershipService;
     private final NotificationService notificationService;
+    private final CurrentUser currentUser;
 
     public Task createTask(Long groupId, Task task) {
-        User creator = getCurrentUser();
+        User creator = currentUser.getCurrentUser();
         StudyGroups studyGroup = studyGroupsRepository.findById(groupId).orElseThrow(()
                 -> new IllegalArgumentException("StudyGroup not found with id " + groupId));
 
@@ -58,21 +58,19 @@ public class TaskService {
     }
 
     public Task updateTask(Long id ,Task task) {
-        User creator = getCurrentUser();
+        User creator = currentUser.getCurrentUser();
         Task taskToUpdate = repository.findById(id).orElse(null);
         if (taskToUpdate == null) {throw new IllegalArgumentException("Task not found");}
         if(!membershipService.isOwner(creator.getId(), taskToUpdate.getStudyGroup().getGroupId())) {
-            throw new AccessDeniedException("Only owner of group can create tasks");
+            throw new AccessDeniedException("Only owner of group can update tasks");
         }
 
         if(task.getStatus() != null) {taskToUpdate.setStatus(task.getStatus());}
         if(task.getDescription() != null) {taskToUpdate.setDescription(task.getDescription());}
         if(task.getDeadline() != null) {taskToUpdate.setDeadline(task.getDeadline());}
-        if(task.getCreatedBy() != null) {taskToUpdate.setCreatedBy(task.getCreatedBy());}
         taskToUpdate.setTitle(task.getTitle());
-        taskToUpdate.setCreatedAt(task.getCreatedAt());
 
-        notificationService.sendToGroup(task.getStudyGroup().getGroupId(),
+        notificationService.sendToGroup(taskToUpdate.getStudyGroup().getGroupId(),
                 "New task created: " + task.getTitle());
 
         activityLogsService.log(creator,
@@ -86,7 +84,7 @@ public class TaskService {
         Task task = repository.findById(taskId).orElse(null);
         if (task == null) {throw new IllegalArgumentException("Task not found");}
 
-        User user = getCurrentUser();
+        User user = currentUser.getCurrentUser();
 
         if(!membershipService.isOwner(user.getId(), task.getStudyGroup().getGroupId())) {
             throw new AccessDeniedException("Only owner of group can remove tasks");

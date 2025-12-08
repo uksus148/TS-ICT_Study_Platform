@@ -1,14 +1,13 @@
 package org.application.tsiktsemestraljob.StudyGroups;
-/**
- * This class created for do an StudyGroups POST request for easier tests implementation
+/*
+ * This class created for do a StudyGroups POST request for easier tests implementation
  */
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.application.tsiktsemestraljob.User.UserPostRequest;
+import org.application.tsiktsemestraljob.User.UserRegisterRequest;
 import org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO.StudyGroupsRequestDTO;
 import org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO.StudyGroupsResponseDTO;
-import org.application.tsiktsemestraljob.demo.DTO.TaskDTO.TaskRequestDTO;
-import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
+import org.application.tsiktsemestraljob.demo.DTO.UserDTO.UserResponseDTO;
 import org.application.tsiktsemestraljob.demo.Entities.User;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,14 +20,15 @@ public class StudyGroupsPostRequest {
     private final ObjectMapper objectMapper;
 
     public StudyGroupsResponseDTO postGroup(String name) throws Exception {
-        UserPostRequest userPostRequest = new UserPostRequest(mockMvc, objectMapper);
-        User user = userPostRequest.postUser("testuserr", "email");
-        Long id = user.getId();
+        UserRegisterRequest userRegisterRequest = new UserRegisterRequest(mockMvc, objectMapper);
+        UserResponseDTO user = userRegisterRequest.registeredUser("testname", "testmail", "12345");
+        Long id = user.id();
 
         StudyGroupsRequestDTO dto = new StudyGroupsRequestDTO(
                 name,
                 null
         );
+
 
         String response = mockMvc.perform(post("/api/studyGroups/" + id)
                         .contentType(MediaType.APPLICATION_JSON)
