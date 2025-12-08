@@ -1,12 +1,13 @@
 package org.application.tsiktsemestraljob.Task;
-/**
- * This class created for do an Task POST request for easier tests implementation
+/*
+ * This class created for do a Task POST request for easier tests implementation
  */
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.application.tsiktsemestraljob.User.UserPostRequest;
+import org.application.tsiktsemestraljob.User.UserRegisterRequest;
 import org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO.StudyGroupsResponseDTO;
+import org.application.tsiktsemestraljob.demo.DTO.UserDTO.UserResponseDTO;
 import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
 import org.application.tsiktsemestraljob.demo.Entities.User;
 import org.application.tsiktsemestraljob.demo.DTO.TaskDTO.TaskRequestDTO;
@@ -29,9 +30,9 @@ public class TaskPostRequest {
                 null
         );
 
-        UserPostRequest userPostRequest = new UserPostRequest(mockMvc, objectMapper);
-        User user = userPostRequest.postUser("uUser", "uPassword");
-        Long id = user.getId();
+        UserRegisterRequest userRegisterRequest = new UserRegisterRequest(mockMvc, objectMapper);
+        UserResponseDTO user = userRegisterRequest.registeredUser("testname", "testmail", "12345");
+        Long id = user.id();
 
         StudyGroups studyGroup = new StudyGroups();
         studyGroup.setName("testgroup");
@@ -45,7 +46,7 @@ public class TaskPostRequest {
         StudyGroupsResponseDTO dto2 = objectMapper.readValue(response, StudyGroupsResponseDTO.class);
         Long groupId = dto2.id();
 
-        String answer = mockMvc.perform(post("/api/tasks/" + id + "/" + groupId)
+        String answer = mockMvc.perform(post("/api/tasks/" + groupId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())

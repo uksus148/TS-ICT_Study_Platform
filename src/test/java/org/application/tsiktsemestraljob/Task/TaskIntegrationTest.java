@@ -3,15 +3,15 @@ package org.application.tsiktsemestraljob.Task;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.application.tsiktsemestraljob.IntegrationTest;
-import org.application.tsiktsemestraljob.User.UserPostRequest;
 import org.application.tsiktsemestraljob.demo.DTO.TaskDTO.TaskRequestDTO;
 import org.application.tsiktsemestraljob.demo.DTO.TaskDTO.TaskResponseDTO;
-import org.application.tsiktsemestraljob.demo.Entities.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -21,12 +21,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@WithMockUser(username = "testmail", roles = {"OWNER"})
 public class TaskIntegrationTest extends IntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    private TaskPostRequest taskPostRequest;
+    @BeforeEach
+    void setUp() {
+        taskPostRequest = new TaskPostRequest(mockMvc, objectMapper);
+    }
 
     @Test
     void getAllTasks() throws Exception {
@@ -36,13 +43,11 @@ public class TaskIntegrationTest extends IntegrationTest {
 
     @Test
     void createTask() throws Exception {
-        TaskPostRequest taskPostRequest = new TaskPostRequest(mockMvc, objectMapper);
         taskPostRequest.postTask("Test Task");
     }
 
     @Test
     void getTaskById() throws Exception {
-        TaskPostRequest taskPostRequest = new TaskPostRequest(mockMvc, objectMapper);
         TaskResponseDTO dto = taskPostRequest.postTask("Test Task");
         Long id = dto.id();
 
@@ -52,7 +57,6 @@ public class TaskIntegrationTest extends IntegrationTest {
 
     @Test
     void updateTask() throws Exception {
-        TaskPostRequest taskPostRequest = new TaskPostRequest(mockMvc, objectMapper);
         TaskResponseDTO task = taskPostRequest.postTask("Test Task");
         Long id = task.id();
 
@@ -71,13 +75,10 @@ public class TaskIntegrationTest extends IntegrationTest {
 
     @Test
     void deleteTask() throws Exception {
-        TaskPostRequest taskPostRequest = new TaskPostRequest(mockMvc, objectMapper);
         TaskResponseDTO task = taskPostRequest.postTask("Test Task");
         Long id = task.id();
 
-        Long userId = task.createdBy();
-
-        mockMvc.perform(delete("/api/tasks/" + id + "/" + userId))
+        mockMvc.perform(delete("/api/tasks/" + id))
                 .andExpect(status().isOk());
     }
 }

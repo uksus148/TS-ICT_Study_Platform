@@ -1,6 +1,7 @@
 package org.application.tsiktsemestraljob.demo.Service;
 
 import lombok.RequiredArgsConstructor;
+import org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess.CurrentUser;
 import org.application.tsiktsemestraljob.demo.Entities.Resources;
 import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
 import org.application.tsiktsemestraljob.demo.Entities.User;
@@ -11,9 +12,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-
-import static org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess.CurrentUser.getCurrentUser;
 
 @Service
 @RequiredArgsConstructor
@@ -21,13 +19,14 @@ public class ResourcesService {
     private final ResourcesRepository resourcesRepository;
     private final StudyGroupsRepository studyGroupsRepository;
     private final ActivityLogsService activityLogsService;
+    private final CurrentUser currentUser;
 
     public List<Resources> findAll() {
         return resourcesRepository.findAll();
     }
 
     public Resources create(Long groupId, Resources resources) {
-        User creator = getCurrentUser();
+        User creator = currentUser.getCurrentUser();
         StudyGroups studyGroup = studyGroupsRepository.findById(groupId).orElseThrow(() -> new IllegalArgumentException("StudyGroup not found with id " + groupId));
 
         resources.setStudyGroup(studyGroup);
@@ -46,11 +45,11 @@ public class ResourcesService {
     }
 
     public Resources update(Long id, Resources resources) {
-        User currentUser = getCurrentUser();
+        User currentUserr = currentUser.getCurrentUser();
        Resources oldResources = resourcesRepository.findById(id).orElse(null);
        if (oldResources == null) {throw new IllegalArgumentException("Resources not found");}
 
-       if(!oldResources.getUploadedBy().equals(currentUser)) {
+       if(!oldResources.getUploadedBy().equals(currentUserr)) {
            throw new AccessDeniedException("You are not owner of this resource");
        }
 
@@ -59,21 +58,21 @@ public class ResourcesService {
            oldResources.setTitle(resources.getTitle());
            if(resources.getUploadedAt() != null) {oldResources.setUploadedAt(resources.getUploadedAt());}
 
-           activityLogsService.log(currentUser,
+           activityLogsService.log(currentUserr,
                    "UPDATE_RESOURCE"
            , "RESOURCE-ID: " + oldResources.getId());
            return resourcesRepository.save(oldResources);
     }
 
     public void delete(Long id) {
-        User currentUser = getCurrentUser();
+        User currentUserr = currentUser.getCurrentUser();
         Resources resources = findById(id);
 
-        if(!resources.getUploadedBy().equals(currentUser)) {
+        if(!resources.getUploadedBy().equals(currentUserr)) {
             throw new AccessDeniedException("You are not owner of this resource");
         }
 
-        activityLogsService.log(currentUser,
+        activityLogsService.log(currentUserr,
                 "DELETE_RESOURCES"
         , "RESOURCE-ID: " + resources.getId());
 

@@ -1,6 +1,7 @@
 package org.application.tsiktsemestraljob.demo.Service;
 
 import lombok.RequiredArgsConstructor;
+import org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess.CurrentUser;
 import org.application.tsiktsemestraljob.demo.Entities.User;
 import org.application.tsiktsemestraljob.demo.Repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,13 +14,13 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.List;
 
-import static org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess.CurrentUser.getCurrentUser;
 
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CurrentUser currentUser;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -53,18 +54,20 @@ public class UserService implements UserDetailsService {
     public void deleteUser(Long id) {
         User toDelete = userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        User current = getCurrentUser();
+        User current = currentUser.getCurrentUser();
         if (!current.getId().equals(id)) {
             throw new SecurityException("You are not allowed to delete other users");
         }
         userRepository.delete(toDelete);
     }
 
-    public User updateUser(User newUser) {
-        User existing = getCurrentUser();
-        if (existing == null) {
-            throw new IllegalStateException("You must be logged to change your data");
-        }
+    public User updateUser(Long id, User newUser) {
+        User existing = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        User current = currentUser.getCurrentUser();
+        if(!current.getId().equals(id)) {throw new SecurityException("You are not allowed to update other users"); }
+
         if (newUser.getName() != null) {
             existing.setName(newUser.getName());
         }

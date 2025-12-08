@@ -1,6 +1,7 @@
 package org.application.tsiktsemestraljob.demo.Service;
 
 import lombok.RequiredArgsConstructor;
+import org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess.CurrentUser;
 import org.application.tsiktsemestraljob.demo.Entities.Membership;
 import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
 import org.application.tsiktsemestraljob.demo.Entities.User;
@@ -14,18 +15,24 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.util.List;
 
-import static org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess.CurrentUser.getCurrentUser;
-
 @Service
 @RequiredArgsConstructor
 public class StudyGroupsService {
     private final StudyGroupsRepository studyGroupsRepository;
-    private final UserRepository userRepository;
+    private final CurrentUser currentUser;
     private final MembershipService membershipService;
     private final ActivityLogsService activityLogsService;
+    private final UserRepository userRepository;
 
-    public StudyGroups create(StudyGroups group) {
-        User creator = getCurrentUser();
+    public StudyGroups create(Long id,StudyGroups group) {
+        User creator = currentUser.getCurrentUser();
+        User user = userRepository.findById(id)
+                        .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if(!creator.getId().equals(user.getId())) {
+            throw new AccessDeniedException("You do not have permission to access this resource");
+        }
+
         group.setCreatedBy(creator);
 
         StudyGroups finalGroup = studyGroupsRepository.save(group);
@@ -40,8 +47,9 @@ public class StudyGroupsService {
 
     @Transactional
     public void joinGroup(Long groupId) {
-        User user = getCurrentUser();
-        StudyGroups group = studyGroupsRepository.findById(groupId).orElseThrow(() -> new IllegalArgumentException("Group not found with id " + groupId));
+        User user = currentUser.getCurrentUser();
+        StudyGroups group = studyGroupsRepository.findById(groupId).orElseThrow(()
+                -> new IllegalArgumentException("Group not found with id " + groupId));
 
         membershipService.addMember(user, group, MembershipRole.MEMBER);
 
@@ -57,7 +65,7 @@ public class StudyGroupsService {
 
     @Transactional
     public void deleteGroup(Long groupId) {
-        User user = getCurrentUser();
+        User user = currentUser.getCurrentUser();
         if (!membershipService.isOwner(user.getId(), groupId)) {
             throw new AccessDeniedException("Only owner of group can delete group");
         }
@@ -70,7 +78,7 @@ public class StudyGroupsService {
     }
 
     public StudyGroups updateStudyGroups(Long id, StudyGroups newStudyGroups) {
-        User user = getCurrentUser();
+        User user = currentUser.getCurrentUser();
         if (!membershipService.isOwner(user.getId(), id)) {
             throw new AccessDeniedException("Only owner of group can update group");
         }

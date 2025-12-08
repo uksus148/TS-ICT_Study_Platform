@@ -35,10 +35,10 @@ public class StudyGroupsController {
         studyGroupsService.joinGroup(groupId);
     }
 
-    @PostMapping()
-    public StudyGroupsResponseDTO create(@RequestBody StudyGroupsRequestDTO dto) {
+    @PostMapping("/{id}")
+    public StudyGroupsResponseDTO create(@PathVariable Long id, @RequestBody StudyGroupsRequestDTO dto) {
         StudyGroups studyGroup = StudyGroupsMapper.toEntity(dto);
-        StudyGroups saveGroup = studyGroupsService.create(studyGroup);
+        StudyGroups saveGroup = studyGroupsService.create(id, studyGroup);
         return StudyGroupsMapper.toDto(saveGroup);
     }
 
