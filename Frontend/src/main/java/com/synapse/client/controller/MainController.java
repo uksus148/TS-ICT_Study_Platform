@@ -79,6 +79,10 @@ public class MainController {
         }
     }
 
+    public void showProfileView() {
+        loadView("ProfileView.fxml");
+    }
+
     public Object loadView(String fxmlFileName) {
         try {
             String fxmlPath = "/com/synapse/client/views/" + fxmlFileName;
@@ -94,6 +98,7 @@ public class MainController {
             if (controller instanceof UpcomingController) ((UpcomingController) controller).setMainController(this);
             if (controller instanceof GroupsController) ((GroupsController) controller).setMainController(this);
             if (controller instanceof GroupDetailsController) ((GroupDetailsController) controller).setMainController(this);
+            if (controller instanceof ProfileController) ((ProfileController) controller).setMainController(this);
 
             return controller;
 
