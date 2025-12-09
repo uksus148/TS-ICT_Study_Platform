@@ -2,6 +2,7 @@ package org.application.tsiktsemestraljob.demo.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess.CurrentUser;
+import org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess.CustomUserDetails;
 import org.application.tsiktsemestraljob.demo.Entities.User;
 import org.application.tsiktsemestraljob.demo.Repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,11 +28,7 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPasswordHash())
-                .authorities("USER")
-                .build();
+        return new CustomUserDetails(user);
     }
 
     public User register(String name, String email, String rawPassword) {

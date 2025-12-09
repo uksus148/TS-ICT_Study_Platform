@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.demo.DTO.Authentication.LoginDTO;
 import org.application.tsiktsemestraljob.demo.DTO.Authentication.RegisterDTO;
+import org.application.tsiktsemestraljob.demo.DTO.UserDTO.UserMapper;
+import org.application.tsiktsemestraljob.demo.DTO.UserDTO.UserResponseDTO;
 import org.application.tsiktsemestraljob.demo.Entities.User;
 import org.application.tsiktsemestraljob.demo.Service.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,13 +26,13 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public User register(@RequestBody RegisterDTO dto) {
+    public UserResponseDTO register(@RequestBody RegisterDTO dto) {
         User user = userService.register(dto.name(), dto.email(), dto.password());
-        return user;
+        return UserMapper.toDTO(user);
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginDTO dto, HttpServletRequest request) {
+    public UserResponseDTO login(@RequestBody LoginDTO dto, HttpServletRequest request) {
         Authentication auth = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.email(), dto.password())
         );
@@ -38,7 +40,10 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(auth);
         request.getSession(true);
 
-        return "Logged in";
+        CustomUserDetails cud = (CustomUserDetails) auth.getPrincipal();
+        User user = cud.getUser();
+
+        return UserMapper.toDTO(user);
     }
 
     @PostMapping("/logout")

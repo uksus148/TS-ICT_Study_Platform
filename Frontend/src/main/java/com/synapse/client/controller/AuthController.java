@@ -64,13 +64,18 @@ public class AuthController {
                 .thenAccept(user -> {
                     if (user != null) {
                         Platform.runLater(() -> {
-                            System.out.println("Logged in as ID: " + user.getUser_id());
+                            System.out.println("Login successful! User ID: " + user.getUser_id());
                             UserSession.getInstance().login(user);
                             openMainApplication(event);
                         });
                     } else {
-                        Platform.runLater(() -> showAlert("Login Failed", "Invalid email or password"));
+                        Platform.runLater(() -> showAlert("Login Failed", "Invalid credentials or server error"));
                     }
+                })
+                .exceptionally(e -> {
+                    e.printStackTrace();
+                    Platform.runLater(() -> showAlert("Connection Error", "Could not connect to server"));
+                    return null;
                 });
     }
     @FXML
@@ -83,22 +88,24 @@ public class AuthController {
             showAlert("Error", "Please fill all fields");
             return;
         }
-
         ApiService.getInstance().registerUser(username, email, password)
-                .thenAccept(savedUser -> {
-                    if (savedUser != null) {
-                        Platform.runLater(() -> {
-                            System.out.println("Registered User ID: " + savedUser.getUser_id());
-                            UserSession.getInstance().login(savedUser);
-                            openMainApplication(event);
-                        });
+                .thenCompose(registeredUser -> {
+                    if (registeredUser != null) {
+                        System.out.println("Registered successfully. ID: " + registeredUser.getUser_id());
+                        return ApiService.getInstance().loginUser(email, password);
                     } else {
-                        Platform.runLater(() -> showAlert("Error", "Registration failed (Email might be taken)"));
+                        throw new RuntimeException("Registration returned null");
                     }
                 })
+                .thenAccept(loggedInUser -> {
+                    Platform.runLater(() -> {
+                        UserSession.getInstance().login(loggedInUser);
+                        openMainApplication(event);
+                    });
+                })
                 .exceptionally(e -> {
-                    Platform.runLater(() -> showAlert("Connection Error", "Could not connect to server"));
                     e.printStackTrace();
+                    Platform.runLater(() -> showAlert("Registration Failed", "Email might be taken"));
                     return null;
                 });
     }

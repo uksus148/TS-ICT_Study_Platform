@@ -5,6 +5,7 @@ import com.synapse.client.model.Group;
 import com.synapse.client.model.Resource;
 import com.synapse.client.model.Task;
 import com.synapse.client.model.User;
+import com.synapse.client.model.dto.LoginRequest;
 import com.synapse.client.model.dto.RegisterRequest;
 import com.synapse.client.store.MembershipDeserializer;
 
@@ -29,8 +30,10 @@ public class ApiService {
     private ApiService() {
         this.cookieManager = new CookieManager();
         this.cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+
         this.client = HttpClient.newBuilder()
                 .cookieHandler(this.cookieManager)
+                .version(HttpClient.Version.HTTP_1_1)
                 .build();
 
         this.gson = new GsonBuilder()
@@ -231,7 +234,7 @@ public class ApiService {
         String json = gson.toJson(requestDto);
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/api/auth/register"))
+                .uri(URI.create(BASE_URL + "/auth/register"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
@@ -248,7 +251,21 @@ public class ApiService {
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
 
-        return sendRequest(request, User.class);
+        return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    // === ОТЛАДКА НАЧАЛО ===
+                    System.out.println("--- LOGIN DEBUG ---");
+                    System.out.println("Status: " + response.statusCode());
+                    System.out.println("Headers: " + response.headers().map());
+                    // Ищем тут "Set-Cookie" или "set-cookie"
+                    // === ОТЛАДКА КОНЕЦ ===
+
+                    if (response.statusCode() >= 300) {
+                        System.err.println("Login Error: " + response.statusCode());
+                        return null;
+                    }
+                    return gson.fromJson(response.body(), User.class);
+                });
     }
 
     public CompletableFuture<Void> logout() {
