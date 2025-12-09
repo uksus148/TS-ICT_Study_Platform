@@ -12,7 +12,6 @@ import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
 import org.application.tsiktsemestraljob.demo.Entities.User;
 import org.application.tsiktsemestraljob.demo.DTO.TaskDTO.TaskRequestDTO;
 import org.application.tsiktsemestraljob.demo.DTO.TaskDTO.TaskResponseDTO;
-import org.application.tsiktsemestraljob.demo.Enums.TaskStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,7 +28,7 @@ public class TaskPostRequest {
                 title,
                 null,
                 null,
-                TaskStatus.IN_PROGRESS
+                null
         );
 
         UserRegisterRequest userRegisterRequest = new UserRegisterRequest(mockMvc, objectMapper);

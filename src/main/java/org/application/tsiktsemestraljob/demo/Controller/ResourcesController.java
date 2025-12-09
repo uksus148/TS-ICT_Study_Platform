@@ -16,6 +16,14 @@ import java.util.List;
 public class ResourcesController {
     private final ResourcesService resourcesService;
 
+    @GetMapping("/group/{groupId}")
+    public List<ResourcesResponseDTO> getResourcesByGroup(@PathVariable Long groupId) {
+        return resourcesService.getResourcesByGroup(groupId)
+                .stream()
+                .map(ResourcesMapper::toDto)
+                .toList();
+    }
+
    @GetMapping
     public List<ResourcesResponseDTO> findAll() {
        return resourcesService.findAll()

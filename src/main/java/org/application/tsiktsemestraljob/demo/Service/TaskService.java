@@ -29,10 +29,6 @@ public class TaskService {
         StudyGroups studyGroup = studyGroupsRepository.findById(groupId).orElseThrow(()
                 -> new IllegalArgumentException("StudyGroup not found with id " + groupId));
 
-        if(!membershipService.isOwner(creator.getId(), studyGroup.getGroupId())) {
-            throw new AccessDeniedException("Only owner of group can create tasks");
-        }
-
         task.setCreatedBy(creator);
         task.setStudyGroup(studyGroup);
         task.setStatus(task.getStatus());

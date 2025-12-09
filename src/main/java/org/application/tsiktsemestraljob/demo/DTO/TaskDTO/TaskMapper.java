@@ -8,6 +8,7 @@ public class TaskMapper {
         task.setTitle(dto.title());
         task.setDescription(dto.description());
         task.setDeadline(dto.deadline());
+        task.setStatus(dto.status());
         return task;
     }
     public static TaskResponseDTO toDto(Task task) {
