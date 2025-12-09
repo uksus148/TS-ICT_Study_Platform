@@ -1,6 +1,7 @@
 package com.synapse.client.controller;
 
 import com.synapse.client.TaskStatus;
+import com.synapse.client.UserSession;
 import com.synapse.client.model.Group;
 import com.synapse.client.model.Resource;
 import com.synapse.client.model.Task;
@@ -39,24 +40,22 @@ public class GroupDetailsController {
     private MainController mainController;
     private Group currentGroup;
 
-    @FXML
-    private Label groupNameLabel;
-    @FXML
-    private ListView<Task> tasksListView;
-    @FXML
-    private ListView<Resource> resourcesListView;
-    @FXML
-    private ListView<User> membersListView;
-    @FXML
-    private PieChart tasksPieChart;
+    @FXML private Label groupNameLabel;
+    @FXML private ListView<Task> tasksListView;
+    @FXML private ListView<Resource> resourcesListView;
+    @FXML private ListView<User> membersListView;
+    @FXML private PieChart tasksPieChart;
+
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
     }
 
     public void setGroup(Group group) {
         this.currentGroup = group;
-        groupNameLabel.setText(group.getName());
-        loadData();
+        if (group != null) {
+            groupNameLabel.setText(group.getName());
+            loadData();
+        }
 
         setupTaskListView();
         setupResourceListView();
@@ -66,25 +65,23 @@ public class GroupDetailsController {
     private void loadData() {
         if (currentGroup == null || currentGroup.getGroup_id() == null) return;
         Long groupId = currentGroup.getGroup_id();
+
         ObservableList<Task> tasks = TaskStore.getInstance().getTasksByGroupId(groupId);
         tasksListView.setItems(tasks);
         tasks.addListener((ListChangeListener<Task>) change -> updateChart(tasks));
-
         updateChart(tasks);
 
         MembersStore.getInstance().fetchMembersForGroup(groupId);
         ObservableList<User> members = MembersStore.getInstance().getMembersByGroupId(groupId);
         membersListView.setItems(members);
 
-        ResourceStore.getInstance().fetchResourcesForGroup(currentGroup.getGroup_id());
+        ResourceStore.getInstance().fetchResourcesForGroup(groupId);
         ObservableList<Resource> resources = ResourceStore.getInstance().getResourcesByGroupId(groupId);
         resourcesListView.setItems(resources);
     }
 
     private void setupTaskListView() {
-
         tasksListView.setCellFactory(param -> new ListCell<Task>() {
-
             private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yy");
 
             @Override
@@ -102,7 +99,6 @@ public class GroupDetailsController {
                     CheckBox checkBox = new CheckBox();
                     checkBox.setSelected(task.getStatus() == TaskStatus.COMPLETED);
                     checkBox.getStyleClass().add("list-checkbox");
-                    // TODO: Add listener to checkBox.selectedProperty()
 
                     BorderPane centerLayout = new BorderPane();
                     Label titleLabel = new Label(task.getTitle());
@@ -113,6 +109,7 @@ public class GroupDetailsController {
                         Label deadlineLabel = new Label(formatter.format(task.getDeadline()));
                         deadlineLabel.getStyleClass().add("list-deadline");
                         centerLayout.setLeft(deadlineLabel);
+
                         FontIcon deadlineIcon = new FontIcon(CALENDAR2_X_FILL);
                         deadlineIcon.setIconSize(11);
                         deadlineIcon.setIconColor(Paint.valueOf("rgb(124, 124, 124)"));
@@ -129,7 +126,6 @@ public class GroupDetailsController {
                     arrowRight.setTranslateY(3);
 
                     rowLayout.getChildren().addAll(checkBox, centerLayout, spacer, arrowRight);
-
                     setGraphic(rowLayout);
 
                     setOnMouseClicked(event -> {
@@ -162,11 +158,12 @@ public class GroupDetailsController {
                     VBox textContainer = new VBox();
                     Label nameLabel = new Label(resource.getName());
                     nameLabel.setStyle("-fx-font-weight: bold;");
+
                     Long creatorId = resource.getCreated_by();
                     String creatorName = MembersStore.getInstance().getNameById(creatorId);
                     Label pathLabel = new Label("Uploaded by: " + creatorName);
-
                     pathLabel.setStyle("-fx-text-fill: gray; -fx-font-size: 10px;");
+
                     textContainer.getChildren().addAll(nameLabel, pathLabel);
 
                     Region spacer = new Region();
@@ -194,8 +191,6 @@ public class GroupDetailsController {
         try {
             if (Desktop.isDesktopSupported()) {
                 Desktop.getDesktop().browse(new URI(url));
-            } else {
-                System.err.println("Desktop is not supported");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -216,11 +211,10 @@ public class GroupDetailsController {
                     Files.copy(sourceFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     System.out.println("File saved to: " + destFile.getAbsolutePath());
                 } else {
-                    System.err.println("Source file not found (Mock mode): " + resource.getPath());
+                    System.err.println("Source file not found: " + resource.getPath());
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                System.err.println("Error saving file");
             }
         }
     }
@@ -237,6 +231,7 @@ public class GroupDetailsController {
                 } else {
                     HBox row = new HBox(10);
                     row.setAlignment(Pos.CENTER_LEFT);
+
                     VBox infoBox = new VBox();
                     Label nameLabel = new Label(user.getName());
                     nameLabel.setStyle("-fx-font-weight: bold;");
@@ -248,12 +243,9 @@ public class GroupDetailsController {
                     HBox.setHgrow(spacer, Priority.ALWAYS);
 
                     row.getChildren().addAll(infoBox, spacer);
-
-                    Long currentLoggedInUser = 1L;
-                    //TODO: Change from session after add profile
+                    Long currentLoggedInUser = UserSession.getInstance().getUserId();
 
                     boolean amIAdmin = currentGroup.getCreated_by().equals(currentLoggedInUser);
-
                     boolean isTargetSelf = user.getUser_id().equals(currentLoggedInUser);
 
                     if (amIAdmin && !isTargetSelf) {
@@ -289,7 +281,6 @@ public class GroupDetailsController {
 
         for (Task task : tasks) {
             if (task.getStatus() == null) continue;
-
             switch (task.getStatus()) {
                 case CANCELED -> canceledCount++;
                 case IN_PROGRESS -> inProgressCount++;
@@ -298,12 +289,13 @@ public class GroupDetailsController {
         }
 
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+        if (canceledCount > 0) pieChartData.add(new PieChart.Data("Canceled", canceledCount));
+        if (inProgressCount > 0) pieChartData.add(new PieChart.Data("In Progress", inProgressCount));
+        if (completedCount > 0) pieChartData.add(new PieChart.Data("Completed", completedCount));
 
-        if (canceledCount > 0) pieChartData.add(new PieChart.Data("Canceled (" + canceledCount + ")", canceledCount));
-        if (inProgressCount > 0) pieChartData.add(new PieChart.Data("In Progress (" + inProgressCount + ")", inProgressCount));
-        if (completedCount > 0) pieChartData.add(new PieChart.Data("Completed (" + completedCount + ")", completedCount));
         tasksPieChart.setData(pieChartData);
         tasksPieChart.setTitle("Status Overview");
+        tasksPieChart.setLegendVisible(false);
     }
 
     @FXML
@@ -317,8 +309,6 @@ public class GroupDetailsController {
     public void onAddTask() {
         if (mainController != null) {
             mainController.requestOpenNewTaskEditor(this.currentGroup.getGroup_id());
-        } else {
-            System.err.println("ERROR: Main Controller is null");
         }
     }
 
@@ -331,8 +321,6 @@ public class GroupDetailsController {
     public void onUploadFile() {
         if (mainController != null && currentGroup != null) {
             mainController.requestOpenResourceEditor(currentGroup);
-        } else {
-            System.err.println("MainController or Group is null");
         }
     }
 }

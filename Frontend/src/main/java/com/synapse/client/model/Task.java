@@ -17,7 +17,7 @@ public class Task {
     @SerializedName(value = "description")
     private String description;
     @SerializedName(value = "deadline")
-    private LocalDate deadline;
+    private LocalDateTime deadline;
     @SerializedName(value = "status")
     private TaskStatus status;
     @SerializedName(value = "created_at")
@@ -28,7 +28,7 @@ public class Task {
     }
 
 
-    public Task(Long task_id, Long group_id, Long created_by, String title, String description, LocalDate deadline, LocalDateTime created_at, TaskStatus status) {
+    public Task(Long task_id, Long group_id, Long created_by, String title, String description, LocalDateTime deadline, LocalDateTime created_at, TaskStatus status) {
         this.task_id = task_id;
         this.group_id = group_id;
         this.created_by = created_by;
@@ -39,7 +39,7 @@ public class Task {
         this.status = status;
     }
 
-    public Task(String title, String description, LocalDate deadline, TaskStatus status) {
+    public Task(String title, String description, LocalDateTime deadline, TaskStatus status) {
         this.task_id = null;
         this.title = title;
         this.description = description;
@@ -54,7 +54,6 @@ public class Task {
         return task_id;
     }
 
-    // Добавил сеттер для ID (нужен для получения ID от сервера)
     public void setTask_id(Long task_id) {
         this.task_id = task_id;
     }
@@ -77,8 +76,8 @@ public class Task {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public LocalDate getDeadline() { return deadline; }
-    public void setDeadline(LocalDate deadline) { this.deadline = deadline; }
+    public LocalDateTime getDeadline() { return deadline; }
+    public void setDeadline(LocalDateTime deadline) { this.deadline = deadline; }
 
     public TaskStatus getStatus() { return this.status; }
     public void setStatus(TaskStatus status) { this.status = status; }

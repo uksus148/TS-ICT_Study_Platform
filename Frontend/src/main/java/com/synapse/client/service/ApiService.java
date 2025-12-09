@@ -217,7 +217,7 @@ public class ApiService {
     }
 
     public CompletableFuture<Resource[]> getGroupResources(Long groupId) {
-        HttpRequest request = newRequestBuilder("/api/resources/group/" + groupId)
+        HttpRequest request = newRequestBuilder("/api/resources/" + groupId)
                 .GET()
                 .build();
         return sendRequest(request, Resource[].class);

@@ -1,6 +1,7 @@
 package com.synapse.client.controller;
 
 import com.synapse.client.UserSession;
+import com.synapse.client.service.AlertService;
 import com.synapse.client.service.ApiService;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -9,7 +10,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -55,7 +55,7 @@ public class AuthController {
         String password = passwordField.getText();
 
         if (email.isEmpty() || password.isEmpty()) {
-            showAlert("Error", "Please fill fields");
+            AlertService.showError("Error", "Please fill fields");
             return;
         }
 
@@ -68,12 +68,12 @@ public class AuthController {
                             openMainApplication(event);
                         });
                     } else {
-                        Platform.runLater(() -> showAlert("Login Failed", "Invalid credentials or server error"));
+                        AlertService.showError("Login Failed", "Invalid credentials or server error");
                     }
                 })
                 .exceptionally(e -> {
                     e.printStackTrace();
-                    Platform.runLater(() -> showAlert("Connection Error", "Could not connect to server"));
+                    AlertService.showError("Connection Error", "Could not connect to server");
                     return null;
                 });
     }
@@ -85,9 +85,10 @@ public class AuthController {
         String password = passwordField.getText();
 
         if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            showAlert("Error", "Please fill all fields");
+            AlertService.showError("Error", "Please fill all fields");
             return;
         }
+
         ApiService.getInstance().registerUser(username, email, password)
                 .thenAccept(registeredUser -> {
                     if (registeredUser != null) {
@@ -97,22 +98,14 @@ public class AuthController {
                             openMainApplication(event);
                         });
                     } else {
-                        Platform.runLater(() -> showAlert("Registration Error", "Server returned empty response"));
+                        AlertService.showError("Registration Error", "Server returned empty response");
                     }
                 })
                 .exceptionally(e -> {
                     e.printStackTrace();
-                    Platform.runLater(() -> showAlert("Registration Failed", "Email might be taken or server error"));
+                    AlertService.showError("Registration Failed", "Email might be taken or server error");
                     return null;
                 });
-    }
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     private void loadAuthView(ActionEvent event, String fxmlPath) {

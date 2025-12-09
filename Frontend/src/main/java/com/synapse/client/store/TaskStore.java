@@ -1,6 +1,8 @@
 package com.synapse.client.store;
 
+import com.synapse.client.UserSession;
 import com.synapse.client.model.Task;
+import com.synapse.client.service.AlertService;
 import com.synapse.client.service.ApiService;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -10,18 +12,31 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class TaskStore {
     private static TaskStore instance;
-    private ObservableList<Task> tasks = FXCollections.observableArrayList();
+    private final ObservableList<Task> tasks = FXCollections.observableArrayList();
 
-    private TaskStore() {}
+    private FilteredList<Task> todayTasks;
+    private FilteredList<Task> upcomingTasks;
+
+    private TaskStore() {
+        this.todayTasks = new FilteredList<>(this.tasks, task -> {
+            if (task.getDeadline() == null) return false;
+            return task.getDeadline().toLocalDate().equals(LocalDate.now());
+        });
+
+        this.upcomingTasks = new FilteredList<>(this.tasks, task -> {
+            if (task.getDeadline() == null) return false;
+            return task.getDeadline().toLocalDate().isAfter(LocalDate.now());
+        });
+    }
 
     public static synchronized TaskStore getInstance() {
         if (instance == null) instance = new TaskStore();
         return instance;
     }
-
     public ObservableList<Task> getTasks() {
         return tasks;
     }
@@ -32,48 +47,79 @@ public class TaskStore {
         );
     }
 
+    public ObservableList<Task> getTodayTasks() {
+        return todayTasks;
+    }
+
+    public ObservableList<Task> getUpcomingTasks() {
+        return upcomingTasks;
+    }
+
+    public IntegerBinding getTodayTaskCountProperty() {
+        return Bindings.size(todayTasks);
+    }
+
+    public IntegerBinding getUpcomingTaskCountProperty() {
+        return Bindings.size(upcomingTasks);
+    }
+
     public void fetchTasksFromServer() {
-        ApiService.getInstance().getAllTasks().thenAccept(loadedTasks -> {
-            if (loadedTasks != null) {
-                Platform.runLater(() -> {
-                    tasks.clear();
-                    tasks.addAll(loadedTasks);
-                    System.out.println("Tasks loaded: " + tasks.size());
+        ApiService.getInstance().getAllTasks()
+                .thenAccept(loadedTasks -> {
+                    if (loadedTasks != null) {
+                        Platform.runLater(() -> {
+                            tasks.setAll(loadedTasks);
+                            System.out.println("Tasks loaded: " + tasks.size());
+                        });
+                    }
+                })
+                .exceptionally(e -> {
+                    System.err.println("Failed to load tasks: " + e.getMessage());
+                    return null;
                 });
-            }
-        });
     }
 
     public void addTask(Task task) {
         if (task.getCreated_by() == null) {
-            // TODO: Change to auto detect id
-            task.setCreated_by(1L);
+            Long userId = UserSession.getInstance().getUserId();
+            task.setCreated_by(userId != null ? userId : 1L);
         }
 
-        ApiService.getInstance().createTask(task).thenAccept(savedTask -> {
-            if (savedTask != null) {
-                Platform.runLater(() -> {
-                    tasks.add(savedTask);
-                    System.out.println("Task created: " + savedTask.getTitle());
+        ApiService.getInstance().createTask(task)
+                .thenAccept(savedTask -> {
+                    if (savedTask != null) {
+                        Platform.runLater(() -> {
+                            tasks.add(savedTask);
+                            System.out.println("Task created: " + savedTask.getTitle());
+                        });
+                    }
+                })
+                .exceptionally(e -> {
+                    System.err.println("Failed to create task: " + e.getMessage());
+                    Platform.runLater(() -> AlertService.showError("Failed to create task", e.getMessage()));
+                    return null;
                 });
-            }
-        });
     }
 
     public void updateTask(Task task) {
-        ApiService.getInstance().updateTask(task).thenAccept(updatedTask -> {
-            if (updatedTask != null) {
-                Platform.runLater(() -> {
-                    for (int i = 0; i < tasks.size(); i++) {
-                        if (tasks.get(i).getTask_id().equals(updatedTask.getTask_id())) {
-                            tasks.set(i, updatedTask);
-                            break;
-                        }
+        ApiService.getInstance().updateTask(task)
+                .thenAccept(updatedTask -> {
+                    if (updatedTask != null) {
+                        Platform.runLater(() -> {
+                            for (int i = 0; i < tasks.size(); i++) {
+                                if (tasks.get(i).getTask_id().equals(updatedTask.getTask_id())) {
+                                    tasks.set(i, updatedTask); // Это автоматически обновит и фильтрованные списки
+                                    break;
+                                }
+                            }
+                            System.out.println("Task updated: " + updatedTask.getTitle());
+                        });
                     }
-                    System.out.println("Task updated: " + updatedTask.getTitle());
+                })
+                .exceptionally(e -> {
+                    System.err.println("Failed to update task: " + e.getMessage());
+                    return null;
                 });
-            }
-        });
     }
 
     public void deleteTask(Task task) {
@@ -83,31 +129,11 @@ public class TaskStore {
                         tasks.remove(task);
                         System.out.println("Task deleted");
                     });
+                })
+                .exceptionally(e -> {
+                    System.err.println("Failed to delete task: " + e.getMessage());
+                    return null;
                 });
-    }
-
-    public ObservableList<Task> getTodayTasks() {
-        return new FilteredList<>(this.tasks, task -> {
-            if (task.getDeadline() == null) return false;
-            return task.getDeadline().equals(LocalDate.now());
-        });
-    }
-
-    public ObservableList<Task> getUpcomingTasks() {
-        return new FilteredList<>(this.tasks, task -> {
-            if (task.getDeadline() == null) return false;
-            return task.getDeadline().isAfter(LocalDate.now());
-        });
-    }
-
-    public IntegerBinding getTodayTaskCountProperty() {
-        FilteredList<Task> todayTasks = (FilteredList<Task>) getTodayTasks();
-        return Bindings.size(todayTasks);
-    }
-
-    public IntegerBinding getUpcomingTaskCountProperty() {
-        FilteredList<Task> upcomingTasks = (FilteredList<Task>) getUpcomingTasks();
-        return Bindings.size(upcomingTasks);
     }
 
     public void clear() {
