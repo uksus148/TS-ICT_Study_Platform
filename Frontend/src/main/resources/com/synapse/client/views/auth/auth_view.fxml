@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.TextFlow?>
+
+<AnchorPane prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.synapse.client.controller.AuthController">
+    <children>
+        <HBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <VBox alignment="TOP_LEFT" prefWidth="405.0" styleClass="auth-left-pane" HBox.hgrow="ALWAYS">
+                    <padding>
+                        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+                    </padding>
+                    <children>
+                        <Label styleClass="brand-text-large" text="Synapse">
+                            <VBox.margin>
+                                <Insets bottom="60.0" />
+                            </VBox.margin>
+                        </Label>
+                        <AnchorPane prefHeight="300.0" prefWidth="300.0" style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 20;" />
+                    </children>
+                </VBox>
+
+                <VBox alignment="CENTER_LEFT" prefWidth="495.0" styleClass="auth-right-pane" HBox.hgrow="ALWAYS">
+                    <padding>
+                        <Insets bottom="60.0" left="80.0" right="80.0" top="60.0" />
+                    </padding>
+                    <children>
+                        <Label styleClass="auth-headline" text="Master Your Studies" wrapText="true">
+                            <VBox.margin>
+                                <Insets bottom="20.0" />
+                            </VBox.margin>
+                        </Label>
+                        <Label styleClass="auth-description" text="Collaborate with study groups, manage tasks, share resources, and track your progress all in one place. Synapse is your hub for efficient learning." wrapText="true">
+                            <VBox.margin>
+                                <Insets bottom="40.0" />
+                            </VBox.margin>
+                        </Label>
+                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onGetStartedClick" styleClass="btn-primary-large" text="Get Started">
+                            <VBox.margin>
+                                <Insets bottom="20.0" />
+                            </VBox.margin>
+                        </Button>
+                        <TextFlow textAlignment="CENTER">
+                            <children>
+                                <Label styleClass="auth-description" text="Already have an account? " />
+                                <Hyperlink onAction="#onSignInClick" styleClass="auth-link" text="Sign in" />
+                            </children>
+                        </TextFlow>
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+    </children>
+</AnchorPane>

@@ -26,7 +26,6 @@ public class ApiService {
         this.client = HttpClient.newHttpClient();
 
         this.gson = new GsonBuilder()
-                // ДЛЯ ЗАДАЧ
                 .registerTypeAdapter(Task.class, new TaskDeserializer())
                 .registerTypeAdapter(Group.class, new GroupDeserializer())
                 .registerTypeAdapter(LocalDate.class, (JsonDeserializer<LocalDate>) (json, type, ctx) ->
@@ -217,6 +216,30 @@ public class ApiService {
                 .build();
 
         return sendRequest(request, Resource[].class);
+    }
+
+    public CompletableFuture<User> registerUser(User user) {
+        String json = gson.toJson(user);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/auth/register"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        return sendRequest(request, User.class);
+    }
+
+    public CompletableFuture<User> loginUser(String email, String password) {
+        String json = String.format("{\"email\": \"%s\", \"password\": \"%s\"}", email, password);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/auth/login"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        return sendRequest(request, User.class);
     }
 
     private <T> CompletableFuture<T> sendRequest(HttpRequest request, Class<T> responseType) {
