@@ -109,4 +109,8 @@ public class TaskStore {
         FilteredList<Task> upcomingTasks = (FilteredList<Task>) getUpcomingTasks();
         return Bindings.size(upcomingTasks);
     }
+
+    public void clear() {
+        tasks.clear();
+    }
 }

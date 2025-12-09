@@ -163,7 +163,7 @@ public class GroupDetailsController {
                     Label nameLabel = new Label(resource.getName());
                     nameLabel.setStyle("-fx-font-weight: bold;");
                     Long creatorId = resource.getCreated_by();
-                    String creatorName = MembersStore.getInstance().getUserNameById(creatorId);
+                    String creatorName = MembersStore.getInstance().getNameById(creatorId);
                     Label pathLabel = new Label("Uploaded by: " + creatorName);
 
                     pathLabel.setStyle("-fx-text-fill: gray; -fx-font-size: 10px;");
@@ -238,7 +238,7 @@ public class GroupDetailsController {
                     HBox row = new HBox(10);
                     row.setAlignment(Pos.CENTER_LEFT);
                     VBox infoBox = new VBox();
-                    Label nameLabel = new Label(user.getUsername());
+                    Label nameLabel = new Label(user.getName());
                     nameLabel.setStyle("-fx-font-weight: bold;");
                     Label emailLabel = new Label(user.getEmail());
                     emailLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: gray;");
@@ -274,7 +274,7 @@ public class GroupDetailsController {
     private void kickUser(User user) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Kick Member");
-        alert.setHeaderText("Remove " + user.getUsername() + "?");
+        alert.setHeaderText("Remove " + user.getName() + "?");
         alert.setContentText("Are you sure you want to remove this user from the group?");
 
         if (alert.showAndWait().get() == ButtonType.OK) {

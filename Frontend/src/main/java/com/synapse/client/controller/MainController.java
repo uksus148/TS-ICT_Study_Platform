@@ -4,17 +4,22 @@ import com.synapse.client.UserSession;
 import com.synapse.client.model.Group;
 import com.synapse.client.model.Task;
 import com.synapse.client.model.User;
+import com.synapse.client.service.ApiService;
 import com.synapse.client.store.GroupsStore;
 import com.synapse.client.store.MembersStore;
 import com.synapse.client.store.ResourceStore;
 import com.synapse.client.store.TaskStore;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.net.URL;
 
 public class MainController {
     @FXML
@@ -61,10 +66,10 @@ public class MainController {
     // === ГЛАВНЫЙ МЕТОД ПОСЛЕ ВХОДА ===
     public void onSuccessfulLogin() {
         User currentUser = UserSession.getInstance().getCurrentUser();
-        System.out.println("MainController: User logged in -> " + currentUser.getUsername());
+        System.out.println("MainController: User logged in -> " + currentUser.getName());
 
         // 1. Обновляем имя в сайдбаре (если там есть такой метод)
-        // if (sidebarController != null) sidebarController.setUserName(currentUser.getUsername());
+        // if (sidebarController != null) sidebarController.setUserName(currentUser.getName());
 
         // 2. Загружаем все данные с сервера
         refreshAllData();
@@ -200,6 +205,54 @@ public class MainController {
         if (mainBorderPane.getRight() != null) {
             mainBorderPane.getRight().setVisible(false);
             mainBorderPane.getRight().setManaged(false);
+        }
+    }
+
+    public void logout() {
+        System.out.println("Logging out...");
+
+        // 1. Отправляем запрос на сервер
+        ApiService.getInstance().logout().whenComplete((result, error) -> {
+
+            // Этот код выполнится в любом случае (успех или ошибка)
+            // Возвращаемся в UI поток, так как будем менять сцену
+            Platform.runLater(() -> {
+                performLocalLogout();
+            });
+        });
+    }
+
+    private void performLocalLogout() {
+        UserSession.getInstance().logout();
+        TaskStore.getInstance().clear();
+        GroupsStore.getInstance().clear();
+        ResourceStore.getInstance().clear();
+        try {
+            String fxmlPath = "/com/synapse/client/views/auth/auth_view.fxml";
+
+            if (getClass().getResource(fxmlPath) == null) {
+                System.err.println("CRITICAL: Auth View FXML not found!");
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) mainBorderPane.getScene().getWindow();
+            Scene scene = new Scene(root, 1200, 800);
+            URL cssUrl = getClass().getResource("/com/synapse/client/style.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            } else {
+                System.err.println("style.css not found");
+            }
+            stage.setTitle("Synapse"); // Application name
+            stage.setScene(scene);
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Failed to load Auth View");
         }
     }
 }

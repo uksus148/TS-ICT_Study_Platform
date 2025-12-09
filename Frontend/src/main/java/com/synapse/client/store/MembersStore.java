@@ -41,13 +41,13 @@ public class MembersStore {
         });
     }
 
-    public String getUserNameById(Long userId) {
+    public String getNameById(Long userId) {
         if (userId == null) return "Unknown";
 
         for (ObservableList<User> groupList : groupMembers.values()) {
             for (User user : groupList) {
                 if (user.getUser_id().equals(userId)) {
-                    return user.getUsername();
+                    return user.getName();
                 }
             }
         }
@@ -58,11 +58,15 @@ public class MembersStore {
         ObservableList<User> members = getMembersByGroupId(groupId);
         if (members != null) {
             members.remove(user);
-            System.out.println("User " + user.getUsername() + " removed from list locally.");
+            System.out.println("User " + user.getName() + " removed from list locally.");
         }
     }
 
     public void addMember(Long groupId, User user) {
         getMembersByGroupId(groupId).add(user);
+    }
+
+    public void clear() {
+        groupMembers.clear();
     }
 }

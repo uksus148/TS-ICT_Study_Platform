@@ -84,4 +84,8 @@ public class GroupsStore {
             });
         });
     }
+
+    public void clear() {
+        groups.clear();
+    }
 }

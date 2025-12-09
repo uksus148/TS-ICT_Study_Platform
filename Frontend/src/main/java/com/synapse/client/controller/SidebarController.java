@@ -107,7 +107,12 @@ public class SidebarController {
 
     @FXML
     private void onSignOutClicked() {
-        System.out.println("Click on 'Sign out'");
+        if (mainController != null) {
+            // Делегируем логику выхода главному контроллеру
+            mainController.logout();
+        } else {
+            System.out.println("MainController is null");
+        }
     }
     @FXML
     private void onSidebarToggle() {

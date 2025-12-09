@@ -16,6 +16,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.net.URL;
 
 public class AuthController {
 
@@ -83,12 +84,7 @@ public class AuthController {
             return;
         }
 
-        User newUser = new User();
-        newUser.setUsername(username);
-        newUser.setEmail(email);
-        newUser.setPassword(password);
-
-        ApiService.getInstance().registerUser(newUser)
+        ApiService.getInstance().registerUser(username, email, password)
                 .thenAccept(savedUser -> {
                     if (savedUser != null) {
                         Platform.runLater(() -> {
@@ -102,6 +98,7 @@ public class AuthController {
                 })
                 .exceptionally(e -> {
                     Platform.runLater(() -> showAlert("Connection Error", "Could not connect to server"));
+                    e.printStackTrace();
                     return null;
                 });
     }
@@ -127,7 +124,7 @@ public class AuthController {
 
     private void openMainApplication(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/synapse/client/views/main-view.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/synapse/client/views/MainView.fxml"));
             Parent root = loader.load();
 
             MainController mainController = loader.getController();
@@ -135,10 +132,15 @@ public class AuthController {
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            Scene scene = new Scene(root);
-            stage.setTitle("Synapse");
+            Scene scene = new Scene(root, 1200, 800);
+            URL cssUrl = getClass().getResource("/com/synapse/client/style.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            } else {
+                System.err.println("style.css not found");
+            }
+            stage.setTitle("Synapse"); // Application name
             stage.setScene(scene);
-            stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

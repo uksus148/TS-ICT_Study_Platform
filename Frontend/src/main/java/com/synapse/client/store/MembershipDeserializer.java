@@ -22,7 +22,7 @@ public class MembershipDeserializer implements JsonDeserializer<User> {
             if (has(userJson, "id")) user.setUser_id(userJson.get("id").getAsLong());
             else if (has(userJson, "userId")) user.setUser_id(userJson.get("userId").getAsLong());
 
-            if (has(userJson, "name")) user.setUsername(userJson.get("name").getAsString());
+            if (has(userJson, "name")) user.setName(userJson.get("name").getAsString());
             if (has(userJson, "email")) user.setEmail(userJson.get("email").getAsString());
 
             // (Опционально) Можно сохранить Роль где-то, но в модели User для этого может не быть поля.

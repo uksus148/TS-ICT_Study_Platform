@@ -5,8 +5,11 @@ import com.synapse.client.model.Group;
 import com.synapse.client.model.Resource;
 import com.synapse.client.model.Task;
 import com.synapse.client.model.User;
+import com.synapse.client.model.dto.RegisterRequest;
 import com.synapse.client.store.MembershipDeserializer;
 
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -19,11 +22,16 @@ public class ApiService {
     private static ApiService instance;
     private final HttpClient client;
     private final Gson gson;
+    private final CookieManager cookieManager;
 
-    private static final String BASE_URL = "http://localhost:8080/api";
+    private static final String BASE_URL = "http://localhost:8080";
 
     private ApiService() {
-        this.client = HttpClient.newHttpClient();
+        this.cookieManager = new CookieManager();
+        this.cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+        this.client = HttpClient.newBuilder()
+                .cookieHandler(this.cookieManager)
+                .build();
 
         this.gson = new GsonBuilder()
                 .registerTypeAdapter(Task.class, new TaskDeserializer())
@@ -49,7 +57,7 @@ public class ApiService {
 
     public CompletableFuture<Group[]> getAllGroups() {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/studyGroups"))
+                .uri(URI.create(BASE_URL + "/api/studyGroups"))
                 .GET()
                 .build();
 
@@ -62,7 +70,7 @@ public class ApiService {
         // TODO: Remove after add profile
 
         String json = gson.toJson(group);
-        String requestUrl = BASE_URL + "/studyGroups/" + userId;
+        String requestUrl = BASE_URL + "/api/studyGroups/" + userId;
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(requestUrl))
@@ -75,7 +83,7 @@ public class ApiService {
 
     public CompletableFuture<Group> updateGroup(Group group) {
         String json = gson.toJson(group);
-        String requestUrl = BASE_URL + "/studyGroups/" + group.getGroup_id();
+        String requestUrl = BASE_URL + "/api/studyGroups/" + group.getGroup_id();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(requestUrl))
@@ -87,7 +95,7 @@ public class ApiService {
     }
 
     public CompletableFuture<Void> deleteGroup(Long groupId) {
-        String requestUrl = BASE_URL + "/studyGroups/" + groupId;
+        String requestUrl = BASE_URL + "/api/studyGroups/" + groupId;
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(requestUrl))
@@ -104,7 +112,7 @@ public class ApiService {
 
     public CompletableFuture<Task[]> getAllTasks() {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/tasks"))
+                .uri(URI.create(BASE_URL + "/api/tasks"))
                 .GET()
                 .build();
 
@@ -123,7 +131,7 @@ public class ApiService {
         }
 
         String json = gson.toJson(task);
-        String requestUrl = BASE_URL + "/tasks/" + userId + "/" + groupId;
+        String requestUrl = BASE_URL + "/api/tasks/" + groupId;
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(requestUrl))
@@ -137,7 +145,7 @@ public class ApiService {
     public CompletableFuture<Task> updateTask(Task task) {
         String json = gson.toJson(task);
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/tasks/" + task.getTask_id())) // ID в URL
+                .uri(URI.create(BASE_URL + "/api/tasks/" + task.getTask_id())) // ID в URL
                 .header("Content-Type", "application/json")
                 .PUT(HttpRequest.BodyPublishers.ofString(json))
                 .build();
@@ -147,7 +155,7 @@ public class ApiService {
 
     public CompletableFuture<User[]> getGroupMembers(Long groupId) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/memberships/group/" + groupId))
+                .uri(URI.create(BASE_URL + "/api/memberships/group/" + groupId))
                 .GET()
                 .build();
 
@@ -175,7 +183,7 @@ public class ApiService {
 
     public CompletableFuture<Void> deleteTask(Long id) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/tasks/" + id))
+                .uri(URI.create(BASE_URL + "/api/tasks/" + id))
                 .DELETE()
                 .build();
 
@@ -198,7 +206,7 @@ public class ApiService {
         }
 
         String json = gson.toJson(resource);
-        String requestUrl = BASE_URL + "/resources/" + userId + "/" + groupId;
+        String requestUrl = BASE_URL + "/api/resources/" + userId + "/" + groupId;
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(requestUrl))
@@ -211,18 +219,19 @@ public class ApiService {
 
     public CompletableFuture<Resource[]> getGroupResources(Long groupId) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/resources/group/" + groupId))
+                .uri(URI.create(BASE_URL + "/api/resources/group/" + groupId))
                 .GET()
                 .build();
 
         return sendRequest(request, Resource[].class);
     }
 
-    public CompletableFuture<User> registerUser(User user) {
-        String json = gson.toJson(user);
+    public CompletableFuture<User> registerUser(String username, String email, String password) {
+        RegisterRequest requestDto = new RegisterRequest(username, email, password);
+        String json = gson.toJson(requestDto);
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/auth/register"))
+                .uri(URI.create(BASE_URL + "/api/auth/register"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
@@ -242,12 +251,33 @@ public class ApiService {
         return sendRequest(request, User.class);
     }
 
+    public CompletableFuture<Void> logout() {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/auth/logout"))
+                .POST(HttpRequest.BodyPublishers.noBody()) // Тело не нужно
+                .build();
+        return client.sendAsync(request, HttpResponse.BodyHandlers.discarding())
+                .thenAccept(response -> {
+                    if (response.statusCode() >= 300) {
+                        System.err.println("Logout warning: Server returned " + response.statusCode());
+                    } else {
+                        System.out.println("Server session invalidated.");
+                    }
+                })
+                .exceptionally(e -> {
+                    System.err.println("Logout warning: Server unreachable");
+                    return null;
+                });
+    }
+
     private <T> CompletableFuture<T> sendRequest(HttpRequest request, Class<T> responseType) {
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {
                     if (response.statusCode() >= 300) {
-                        System.err.println("Server Error: " + response.body());
-                        return null;
+                        System.err.println("❌ API Error URL: " + request.uri());
+                        System.err.println("❌ Status Code: " + response.statusCode());
+                        System.err.println("❌ Response Body: " + response.body()); // <--- ВОТ ЭТО САМОЕ ВАЖНОЕ
+                        return null; // Возвращаем null, чтобы вызвать ошибку на UI
                     }
                     return gson.fromJson(response.body(), responseType);
                 })

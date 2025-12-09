@@ -48,23 +48,22 @@ public class ResourceStore {
         ApiService.getInstance().createResource(resource).thenAccept(savedResource -> {
             if (savedResource != null) {
                 Platform.runLater(() -> {
-                    // Добавляем в список то, что вернул сервер (с настоящим ID и датой)
                     resources.add(savedResource);
                     System.out.println("Resource uploaded: " + savedResource.getName());
                 });
             }
         });
     }
-
-    // === 3. ПОЛУЧЕНИЕ СПИСКА ДЛЯ UI ===
     public ObservableList<Resource> getResources() {
         return resources;
     }
-
-    // Фильтр (полезно, если вдруг в списке остался мусор от других групп)
     public ObservableList<Resource> getResourcesByGroupId(Long groupId) {
         return new FilteredList<>(this.resources, r ->
                 r.getGroup_id() != null && r.getGroup_id().equals(groupId)
         );
+    }
+
+    public void clear() {
+        resources.clear();
     }
 }

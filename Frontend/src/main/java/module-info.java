@@ -25,4 +25,5 @@ module com.synapse.client { // Желательно переименовать �
 
     exports com.synapse.client.model;
     opens com.synapse.client.model to javafx.fxml, com.google.gson;
+    opens com.synapse.client.model.dto to com.google.gson;
 }
