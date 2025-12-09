@@ -1,5 +1,6 @@
 package org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse; // <--- ВАЖНО: Добавлен Response
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,10 @@ public class AuthController {
     private final SecurityContextRepository securityContextRepository =
             new HttpSessionSecurityContextRepository();
 
+    @Operation(
+            summary = "Register endpoint",
+            description = "This endpoint implement register auth function"
+    )
     @PostMapping("/register")
     public UserResponseDTO register(@RequestBody RegisterDTO dto, HttpServletRequest request, HttpServletResponse response) {
 
@@ -67,6 +72,10 @@ public class AuthController {
         return UserMapper.toDTO(user);
     }
 
+    @Operation(
+            summary = "Login endpoint",
+            description = "This endpoint implement a login logic"
+    )
     @PostMapping("/login")
     public UserResponseDTO login(@RequestBody LoginDTO dto, HttpServletRequest request, HttpServletResponse response) {
 
@@ -86,6 +95,10 @@ public class AuthController {
         return UserMapper.toDTO(user);
     }
 
+    @Operation(
+            summary = "Logout",
+            description = "This endpoint implement logout function for user"
+    )
     @PostMapping("/logout")
     public String logout(HttpServletRequest req) {
         req.getSession().invalidate();

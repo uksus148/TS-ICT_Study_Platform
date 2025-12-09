@@ -20,18 +20,39 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // Swagger
+                        .requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs.yaml",
+                                "/v3/api-docs.json"
+                        ).permitAll()
+
+                        // Auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/ws/**", "/ws").permitAll()  // WebSocket + SockJS
-                        .requestMatchers("/topic/**", "/queue/**").permitAll() // broker channels
+
+                        // WebSocket
+                        .requestMatchers("/ws/**", "/ws").permitAll()
+                        .requestMatchers("/topic/**", "/queue/**").permitAll()
+
+                        // The rest
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
+
+                // ❗ These headers block Swagger UI, must disable
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.disable())       // Allow HTML/iframes
+                        .contentTypeOptions(ctype -> ctype.disable()) // Prevent "download instead of view"
                 );
 
         return http.build();

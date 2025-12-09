@@ -9,3 +9,9 @@ Spring Security: na realizáciu relačnej (session) autorizácie, čo síce poru
 vzdelávacieho projektu a vzhľadom na to, že klientom je „hrubá“ JavaFX aplikácia (a nie napríklad React), je to 
 úplne prijateľné a prípustné – a mnohé API sú takto navrhnuté.
 
+SWAGGER DOKUMENTACIA :
+*********************
+http://localhost:8080/swagger-ui/index.html#/
+*********************
+(POTREBUJETE SPUSTIT' PROJECT)
+
