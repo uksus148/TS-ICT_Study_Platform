@@ -63,7 +63,8 @@ public class TaskIntegrationTest extends IntegrationTest {
         TaskRequestDTO dto = new TaskRequestDTO(
                 "Updated Title",
                 task.description(),
-                task.deadline()
+                task.deadline(),
+                task.status()
         );
 
         mockMvc.perform(put("/api/tasks/" + id)

@@ -173,6 +173,7 @@ public class ApiService {
         if (groupId == null) return CompletableFuture.failedFuture(new RuntimeException("Group ID missing"));
 
         String json = gson.toJson(task);
+        System.out.println("DEBUG JSON SENT: " + json);
         HttpRequest request = newRequestBuilder("/api/tasks/" + groupId)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json))
