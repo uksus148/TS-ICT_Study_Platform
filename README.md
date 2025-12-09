@@ -1,2 +1,17 @@
-There is a Study Platform project. This repository is divided into two folders who hold backend and frontend of application. 
-This README file contains information about project, database and other things. If you want to see backend part or frontend in folders you can find it and read his README.
+Tento projekt predstavuje vzdelávaciu platformu, kde sa študenti môžu učiť spoločne v skupinách, riešiť úlohy a pod.
+Projekt je realizáciou REST API a preto je rozdelený na dve samostatné časti – Frontend a Backend (klient a server).
+Klient je implementovaný ako desktopová aplikácia JavaFX a server je vytvorený pomocou Spring Boot. Aplikácia využíva:
+
+Docker: spúšťanie aplikácie a testov v kontajneri
+Websocket: Real-time notifikacie
+JUnit(a ostatne) : Testy
+Spring Security: na realizáciu relačnej (session) autorizácie, čo síce porušuje princíp stateless, ale v rámci 
+vzdelávacieho projektu a vzhľadom na to, že klientom je „hrubá“ JavaFX aplikácia (a nie napríklad React), je to 
+úplne prijateľné a prípustné – a mnohé API sú takto navrhnuté.
+
+SWAGGER DOKUMENTACIA :
+*********************
+http://localhost:8080/swagger-ui/index.html#/
+*********************
+(POTREBUJETE SPUSTIT' PROJECT)
+
