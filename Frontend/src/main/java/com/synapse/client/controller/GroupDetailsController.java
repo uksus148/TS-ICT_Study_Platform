@@ -1,5 +1,6 @@
 package com.synapse.client.controller;
 
+import com.synapse.client.MembershipRole;
 import com.synapse.client.TaskStatus;
 import com.synapse.client.UserSession;
 import com.synapse.client.model.Group;
@@ -245,7 +246,7 @@ public class GroupDetailsController {
                     row.getChildren().addAll(infoBox, spacer);
                     Long currentLoggedInUser = UserSession.getInstance().getUserId();
 
-                    boolean amIAdmin = currentGroup.getCreated_by().equals(currentLoggedInUser);
+                    boolean amIAdmin = user.getRole().equals(MembershipRole.OWNER);
                     boolean isTargetSelf = user.getUser_id().equals(currentLoggedInUser);
 
                     if (amIAdmin && !isTargetSelf) {

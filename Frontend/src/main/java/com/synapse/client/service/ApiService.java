@@ -204,13 +204,12 @@ public class ApiService {
     }
 
     public CompletableFuture<Resource> createResource(Resource resource) {
-        Long userId = resource.getCreated_by() != null ? resource.getCreated_by() : 1L;
         Long groupId = resource.getGroup_id();
 
         if (groupId == null) return CompletableFuture.failedFuture(new RuntimeException("Group ID required"));
 
         String json = gson.toJson(resource);
-        HttpRequest request = newRequestBuilder("/api/resources/" + userId + "/" + groupId)
+        HttpRequest request = newRequestBuilder("/api/resources/" + groupId)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
@@ -218,14 +217,14 @@ public class ApiService {
     }
 
     public CompletableFuture<Resource[]> getGroupResources(Long groupId) {
-        HttpRequest request = newRequestBuilder("/api/resources/" + groupId)
+        HttpRequest request = newRequestBuilder("/api/resources/group/" + groupId)
                 .GET()
                 .build();
         return sendRequest(request, Resource[].class);
     }
 
     public CompletableFuture<User[]> getGroupMembers(Long groupId) {
-        HttpRequest request = newRequestBuilder("/api/memberships/group/" + groupId)
+        HttpRequest request = newRequestBuilder("/api/studyGroups/" + groupId + "/members")
                 .GET()
                 .build();
 
@@ -235,15 +234,16 @@ public class ApiService {
                         System.err.println("Error loading members: " + response.statusCode());
                         return new User[0];
                     }
-                    JsonArray jsonArray = JsonParser.parseString(response.body()).getAsJsonArray();
-                    User[] users = new User[jsonArray.size()];
-                    MembershipDeserializer md = new MembershipDeserializer();
-                    for(int i=0; i<jsonArray.size(); i++) {
-                        users[i] = md.deserialize(jsonArray.get(i), User.class, null);
+
+                    try {
+                        return gson.fromJson(response.body(), User[].class);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return new User[0];
                     }
-                    return users;
                 });
     }
+
     private <T> CompletableFuture<T> sendRequest(HttpRequest request, Class<T> responseType) {
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {

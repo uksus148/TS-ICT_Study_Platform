@@ -1,9 +1,10 @@
 package com.synapse.client.model;
 
 import com.google.gson.annotations.SerializedName;
+import com.synapse.client.MembershipRole;
 
 public class User {
-    @SerializedName(value = "id", alternate = {"user_id", "userId"})
+    @SerializedName(value = "user_id", alternate = {"id", "userId"})
     private Long user_id;
 
     @SerializedName(value = "name")
@@ -14,6 +15,8 @@ public class User {
 
     @SerializedName("password")
     private String password;
+    @SerializedName("role")
+    private MembershipRole role;
 
     public User() {}
 
@@ -34,6 +37,9 @@ public class User {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    public  MembershipRole getRole() { return role; }
+    public void setRole(MembershipRole role) { this.role = role; }
 
     @Override
     public String toString() {
