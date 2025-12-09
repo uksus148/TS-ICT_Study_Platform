@@ -11,6 +11,7 @@ import org.application.tsiktsemestraljob.demo.Repository.StudyGroupsRepository;
 import org.application.tsiktsemestraljob.demo.Repository.UserRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -40,6 +41,7 @@ public class ResourcesService {
         return resourcesRepository.findAll();
     }
 
+    @Transactional
     public Resources create(Long groupId, Resources resources) {
         User creator = currentUser.getCurrentUser();
         StudyGroups studyGroup = studyGroupsRepository.findById(groupId).orElseThrow(() -> new IllegalArgumentException("StudyGroup not found with id " + groupId));
@@ -59,6 +61,7 @@ public class ResourcesService {
                 .orElseThrow(() -> new IllegalArgumentException("Resource cannot be find"));
     }
 
+    @Transactional
     public Resources update(Long id, Resources resources) {
         User currentUserr = currentUser.getCurrentUser();
        Resources oldResources = resourcesRepository.findById(id).orElse(null);
@@ -79,6 +82,7 @@ public class ResourcesService {
            return resourcesRepository.save(oldResources);
     }
 
+    @Transactional
     public void delete(Long id) {
         User currentUserr = currentUser.getCurrentUser();
         Resources resources = findById(id);

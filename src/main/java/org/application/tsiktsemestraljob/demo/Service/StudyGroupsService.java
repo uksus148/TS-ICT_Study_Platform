@@ -24,6 +24,7 @@ public class StudyGroupsService {
     private final ActivityLogsService activityLogsService;
     private final UserRepository userRepository;
 
+    @Transactional
     public StudyGroups create(Long id,StudyGroups group) {
         User creator = currentUser.getCurrentUser();
         User user = userRepository.findById(id)
@@ -77,6 +78,7 @@ public class StudyGroupsService {
         studyGroupsRepository.deleteById(groupId);
     }
 
+    @Transactional
     public StudyGroups updateStudyGroups(Long id, StudyGroups newStudyGroups) {
         User user = currentUser.getCurrentUser();
         if (!membershipService.isOwner(user.getId(), id)) {
