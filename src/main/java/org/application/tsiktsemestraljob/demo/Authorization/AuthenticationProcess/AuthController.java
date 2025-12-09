@@ -1,6 +1,7 @@
 package org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse; // <--- ВАЖНО: Добавлен Response
 import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.demo.DTO.Authentication.LoginDTO;
 import org.application.tsiktsemestraljob.demo.DTO.Authentication.RegisterDTO;
@@ -12,9 +13,12 @@ import org.application.tsiktsemestraljob.demo.Service.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext; // <--- ИСПРАВЛЕНО (была опечатка)
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,8 +34,12 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    // Репозиторий для явного сохранения сессии
+    private final SecurityContextRepository securityContextRepository =
+            new HttpSessionSecurityContextRepository();
+
     @PostMapping("/register")
-    public UserResponseDTO register(@RequestBody RegisterDTO dto, HttpServletRequest request) {
+    public UserResponseDTO register(@RequestBody RegisterDTO dto, HttpServletRequest request, HttpServletResponse response) {
 
         User user = new User();
         user.setName(dto.name());
@@ -51,21 +59,33 @@ public class AuthController {
                 userDetails.getAuthorities()
         );
 
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        // --- ИСПРАВЛЕННЫЙ БЛОК ---
+        SecurityContext context = SecurityContextHolder.createEmptyContext(); // Здесь была опечатка
+        context.setAuthentication(auth);
+        SecurityContextHolder.setContext(context);
 
-        request.getSession(true);
+        // Явно сохраняем контекст в сессию
+        securityContextRepository.saveContext(context, request, response);
+        // -------------------------
 
         return UserMapper.toDTO(user);
     }
 
     @PostMapping("/login")
-    public UserResponseDTO login(@RequestBody LoginDTO dto, HttpServletRequest request) {
+    public UserResponseDTO login(@RequestBody LoginDTO dto, HttpServletRequest request, HttpServletResponse response) {
+
         Authentication auth = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.email(), dto.password())
         );
 
-        SecurityContextHolder.getContext().setAuthentication(auth);
-        request.getSession(true);
+        // --- ИСПРАВЛЕННЫЙ БЛОК ---
+        SecurityContext context = SecurityContextHolder.createEmptyContext(); // Здесь была опечатка
+        context.setAuthentication(auth);
+        SecurityContextHolder.setContext(context);
+
+        // Явно сохраняем контекст в сессию
+        securityContextRepository.saveContext(context, request, response);
+        // -------------------------
 
         CustomUserDetails cud = (CustomUserDetails) auth.getPrincipal();
         User user = cud.getUser();

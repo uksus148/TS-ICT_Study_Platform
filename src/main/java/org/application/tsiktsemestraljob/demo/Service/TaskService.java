@@ -35,7 +35,7 @@ public class TaskService {
 
         task.setCreatedBy(creator);
         task.setStudyGroup(studyGroup);
-        task.setStatus(TaskStatus.TODO);
+        task.setStatus(task.getStatus());
 
         notificationService.sendToGroup(task.getStudyGroup().getGroupId(),
                 "New task created: " + task.getTitle());
