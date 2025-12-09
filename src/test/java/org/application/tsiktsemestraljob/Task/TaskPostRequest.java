@@ -27,6 +27,7 @@ public class TaskPostRequest {
         TaskRequestDTO dto = new TaskRequestDTO(
                 title,
                 null,
+                null,
                 null
         );
 

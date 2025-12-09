@@ -4,5 +4,9 @@ import org.application.tsiktsemestraljob.demo.Entities.Resources;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
-public interface ResourcesRepository extends JpaRepository<Resources, Long> {}
+public interface ResourcesRepository extends JpaRepository<Resources, Long> {
+    List<Resources> findAllByStudyGroup_GroupId(Long groupId);
+}

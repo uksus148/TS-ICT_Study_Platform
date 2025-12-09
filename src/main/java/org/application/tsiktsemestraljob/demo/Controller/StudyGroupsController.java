@@ -1,10 +1,13 @@
 package org.application.tsiktsemestraljob.demo.Controller;
 
 import lombok.RequiredArgsConstructor;
+import org.application.tsiktsemestraljob.demo.DTO.MembershipDTO.GroupMemberDTO;
+import org.application.tsiktsemestraljob.demo.DTO.MembershipDTO.MembershipMapper;
 import org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO.StudyGroupsMapper;
 import org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO.StudyGroupsRequestDTO;
 import org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO.StudyGroupsResponseDTO;
 import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
+import org.application.tsiktsemestraljob.demo.Service.MembershipService;
 import org.application.tsiktsemestraljob.demo.Service.StudyGroupsService;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +18,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StudyGroupsController {
     private final StudyGroupsService studyGroupsService;
+    private final MembershipService membershipService;
+
+    @GetMapping("/{groupId}/members")
+    public List<GroupMemberDTO> getGroupMembers(@PathVariable Long groupId) {
+        return membershipService.getGroupMembers(groupId)
+                .stream()
+                .map(MembershipMapper::toDTO)
+                .toList();
+    }
 
     @GetMapping
     public List<StudyGroupsResponseDTO> getAll() {

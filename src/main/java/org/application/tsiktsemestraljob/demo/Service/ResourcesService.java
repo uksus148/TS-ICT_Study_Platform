@@ -1,5 +1,6 @@
 package org.application.tsiktsemestraljob.demo.Service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProcess.CurrentUser;
 import org.application.tsiktsemestraljob.demo.Entities.Resources;
@@ -20,6 +21,20 @@ public class ResourcesService {
     private final StudyGroupsRepository studyGroupsRepository;
     private final ActivityLogsService activityLogsService;
     private final CurrentUser currentUser;
+    private final MembershipService membershipService;
+
+    public List<Resources> getResourcesByGroup(Long groupId) {
+        User user = currentUser.getCurrentUser();
+
+        StudyGroups group = studyGroupsRepository.findById(groupId)
+                .orElseThrow(() -> new EntityNotFoundException("Group not found"));
+
+        if (!membershipService.isMember(user.getId(), groupId)) {
+            throw new AccessDeniedException("You are not a member of this group");
+        }
+
+        return resourcesRepository.findAllByStudyGroup_GroupId(groupId);
+    }
 
     public List<Resources> findAll() {
         return resourcesRepository.findAll();
