@@ -35,7 +35,6 @@ public class MembersStore {
                     ObservableList<User> list = getMembersByGroupId(groupId);
                     list.clear();
                     list.addAll(users);
-                    System.out.println("Loaded " + list.size() + " members for group " + groupId);
                 });
             }
         });
@@ -58,7 +57,6 @@ public class MembersStore {
         ObservableList<User> members = getMembersByGroupId(groupId);
         if (members != null) {
             members.remove(user);
-            System.out.println("User " + user.getName() + " removed from list locally.");
         }
     }
 

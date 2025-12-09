@@ -23,12 +23,6 @@ public class AuthController {
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
 
-    private MainController mainController;
-
-    public void setMainController(MainController mainController) {
-        this.mainController = mainController;
-    }
-
     @FXML
     public void onGetStartedClick(ActionEvent event) {
         loadAuthView(event, "/com/synapse/client/views/auth/sign_up.fxml");
@@ -63,7 +57,6 @@ public class AuthController {
                 .thenAccept(user -> {
                     if (user != null) {
                         Platform.runLater(() -> {
-                            System.out.println("Login successful! User ID: " + user.getUser_id());
                             UserSession.getInstance().login(user);
                             openMainApplication(event);
                         });
@@ -93,7 +86,6 @@ public class AuthController {
                 .thenAccept(registeredUser -> {
                     if (registeredUser != null) {
                         Platform.runLater(() -> {
-                            System.out.println("Registered & Auto-logged in. ID: " + registeredUser.getUser_id());
                             UserSession.getInstance().login(registeredUser);
                             openMainApplication(event);
                         });

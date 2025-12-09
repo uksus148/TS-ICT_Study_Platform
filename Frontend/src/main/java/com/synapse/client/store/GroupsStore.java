@@ -31,10 +31,7 @@ public class GroupsStore {
         ApiService.getInstance().getAllGroups()
                 .thenAccept(loadedGroups -> {
                     if (loadedGroups != null) {
-                        Platform.runLater(() -> {
-                            groups.setAll(loadedGroups);
-                            System.out.println("DEBUG: Loaded " + groups.size() + " groups.");
-                        });
+                        Platform.runLater(() -> groups.setAll(loadedGroups));
                     } else {
                         System.out.println("DEBUG: LoadedGroups is NULL");
                     }
@@ -55,10 +52,7 @@ public class GroupsStore {
         ApiService.getInstance().createGroup(group)
                 .thenAccept(savedGroup -> {
                     if (savedGroup != null) {
-                        Platform.runLater(() -> {
-                            this.groups.add(savedGroup);
-                            System.out.println("Group created: " + savedGroup.getName());
-                        });
+                        Platform.runLater(() -> this.groups.add(savedGroup));
                     }
                 })
                 .exceptionally(e -> {
@@ -76,7 +70,6 @@ public class GroupsStore {
                             for (int i = 0; i < groups.size(); i++) {
                                 if (groups.get(i).getGroup_id().equals(updatedGroup.getGroup_id())) {
                                     groups.set(i, updatedGroup);
-                                    System.out.println("Group updated: " + updatedGroup.getName());
                                     return;
                                 }
                             }
@@ -94,12 +87,7 @@ public class GroupsStore {
         if (group == null || group.getGroup_id() == null) return;
 
         ApiService.getInstance().deleteGroup(group.getGroup_id())
-                .thenAccept(response -> {
-                    Platform.runLater(() -> {
-                        this.groups.remove(group);
-                        System.out.println("Group deleted: " + group.getName());
-                    });
-                })
+                .thenAccept(response -> Platform.runLater(() -> this.groups.remove(group)))
                 .exceptionally(e -> {
                     e.printStackTrace();
                     AlertService.showError("Error", "Failed to delete group.");

@@ -12,14 +12,13 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class TaskStore {
     private static TaskStore instance;
     private final ObservableList<Task> tasks = FXCollections.observableArrayList();
 
-    private FilteredList<Task> todayTasks;
-    private FilteredList<Task> upcomingTasks;
+    private final FilteredList<Task> todayTasks;
+    private final FilteredList<Task> upcomingTasks;
 
     private TaskStore() {
         this.todayTasks = new FilteredList<>(this.tasks, task -> {
@@ -36,9 +35,6 @@ public class TaskStore {
     public static synchronized TaskStore getInstance() {
         if (instance == null) instance = new TaskStore();
         return instance;
-    }
-    public ObservableList<Task> getTasks() {
-        return tasks;
     }
 
     public ObservableList<Task> getTasksByGroupId(Long groupId) {
@@ -67,10 +63,7 @@ public class TaskStore {
         ApiService.getInstance().getAllTasks()
                 .thenAccept(loadedTasks -> {
                     if (loadedTasks != null) {
-                        Platform.runLater(() -> {
-                            tasks.setAll(loadedTasks);
-                            System.out.println("Tasks loaded: " + tasks.size());
-                        });
+                        Platform.runLater(() -> tasks.setAll(loadedTasks));
                     }
                 })
                 .exceptionally(e -> {
@@ -88,10 +81,7 @@ public class TaskStore {
         ApiService.getInstance().createTask(task)
                 .thenAccept(savedTask -> {
                     if (savedTask != null) {
-                        Platform.runLater(() -> {
-                            tasks.add(savedTask);
-                            System.out.println("Task created: " + savedTask.getTitle());
-                        });
+                        Platform.runLater(() -> tasks.add(savedTask));
                     }
                 })
                 .exceptionally(e -> {
@@ -108,11 +98,10 @@ public class TaskStore {
                         Platform.runLater(() -> {
                             for (int i = 0; i < tasks.size(); i++) {
                                 if (tasks.get(i).getTask_id().equals(updatedTask.getTask_id())) {
-                                    tasks.set(i, updatedTask); // Это автоматически обновит и фильтрованные списки
+                                    tasks.set(i, updatedTask);
                                     break;
                                 }
                             }
-                            System.out.println("Task updated: " + updatedTask.getTitle());
                         });
                     }
                 })
@@ -124,12 +113,7 @@ public class TaskStore {
 
     public void deleteTask(Task task) {
         ApiService.getInstance().deleteTask(task.getTask_id())
-                .thenAccept(voidResponse -> {
-                    Platform.runLater(() -> {
-                        tasks.remove(task);
-                        System.out.println("Task deleted");
-                    });
-                })
+                .thenAccept(voidResponse -> Platform.runLater(() -> tasks.remove(task)))
                 .exceptionally(e -> {
                     System.err.println("Failed to delete task: " + e.getMessage());
                     return null;

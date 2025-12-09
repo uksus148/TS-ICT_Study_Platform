@@ -67,8 +67,6 @@ public class ResourceEditorController {
         }
         resource.setCreated_by(UserSession.getInstance().getUserId());
         ResourceStore.getInstance().addResource(resource);
-
-        System.out.println("Saving resource for group: " + currentGroup.getName());
         onClose();
     }
 

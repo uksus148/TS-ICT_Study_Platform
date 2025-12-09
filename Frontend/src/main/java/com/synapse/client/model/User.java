@@ -20,14 +20,7 @@ public class User {
 
     public User() {}
 
-    public User(Long user_id, String name, String email) {
-        this.user_id = user_id;
-        this.name = name;
-        this.email = email;
-    }
-
     public Long getUser_id() { return user_id; }
-    public void setUser_id(Long user_id) { this.user_id = user_id; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -39,10 +32,9 @@ public class User {
     public void setPassword(String password) { this.password = password; }
 
     public  MembershipRole getRole() { return role; }
-    public void setRole(MembershipRole role) { this.role = role; }
 
     @Override
     public String toString() {
-        return name; // Чтобы в списках отображалось имя
+        return name;
     }
 }

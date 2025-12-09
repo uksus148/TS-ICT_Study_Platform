@@ -18,34 +18,7 @@ public class SidebarController {
     @FXML
     private VBox sidebar;
     @FXML
-    private Button sidebarOff;
-    @FXML
     private Button sidebarOn;
-    @FXML
-    private TextField searchField;
-
-    @FXML
-    private HBox upcomingButton;
-
-    @FXML
-    private HBox todayButton;
-
-    @FXML
-    private HBox calendarButton;
-
-    @FXML
-    private HBox dashboardButton;
-
-    @FXML
-    private HBox groupsButton;
-
-    @FXML
-    private Button settingsButton;
-
-    @FXML
-    private Button signOutButton;
-    @FXML
-    private Button addTaskButton;
     @FXML
     private Label upcomingCount;
     @FXML
@@ -108,7 +81,6 @@ public class SidebarController {
     @FXML
     private void onSignOutClicked() {
         if (mainController != null) {
-            // Делегируем логику выхода главному контроллеру
             mainController.logout();
         } else {
             System.out.println("MainController is null");

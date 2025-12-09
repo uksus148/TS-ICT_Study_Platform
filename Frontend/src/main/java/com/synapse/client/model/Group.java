@@ -1,7 +1,6 @@
 package com.synapse.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class Group {
@@ -27,9 +26,6 @@ public class Group {
     public Long getGroup_id() {
         return group_id;
     }
-    public void setGroup_id(Long group_id) {
-        this.group_id = group_id;
-    }
     public String getName() {
         return name;
     }
@@ -47,9 +43,6 @@ public class Group {
     }
     public void setCreated_by(Long created_by) {
         this.created_by = created_by;
-    }
-    public LocalDateTime getCreated_at() {
-        return created_at;
     }
     public void setCreated_at(LocalDateTime created_at) {
         this.created_at = created_at;

@@ -7,8 +7,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 
-import java.util.Objects;
-
 public class ResourceStore {
     private static ResourceStore instance;
     private final ObservableList<Resource> resources;
@@ -32,7 +30,6 @@ public class ResourceStore {
                 Platform.runLater(() -> {
                     resources.clear();
                     resources.addAll(loadedResources);
-                    System.out.println("Loaded " + resources.size() + " resources for group " + groupId);
                 });
             } else {
                 System.out.println("No resources loaded (null response)");
@@ -47,15 +44,9 @@ public class ResourceStore {
 
         ApiService.getInstance().createResource(resource).thenAccept(savedResource -> {
             if (savedResource != null) {
-                Platform.runLater(() -> {
-                    resources.add(savedResource);
-                    System.out.println("Resource uploaded: " + savedResource.getName());
-                });
+                Platform.runLater(() -> resources.add(savedResource));
             }
         });
-    }
-    public ObservableList<Resource> getResources() {
-        return resources;
     }
     public ObservableList<Resource> getResourcesByGroupId(Long groupId) {
         return new FilteredList<>(this.resources, r ->

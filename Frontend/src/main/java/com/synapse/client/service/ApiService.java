@@ -7,7 +7,6 @@ import com.synapse.client.model.Task;
 import com.synapse.client.model.User;
 import com.synapse.client.model.dto.LoginRequest;
 import com.synapse.client.model.dto.RegisterRequest;
-import com.synapse.client.store.MembershipDeserializer;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -65,11 +64,7 @@ public class ApiService {
             cookieHeader = response.headers().firstValue("set-cookie");
         }
 
-        if (cookieHeader.isPresent()) {
-            String rawCookie = cookieHeader.get();
-            this.currentSessionId = rawCookie.split(";")[0];
-            System.out.println("SESSION CAPTURED: " + this.currentSessionId);
-        }
+        cookieHeader.ifPresent(rawCookie -> this.currentSessionId = rawCookie.split(";")[0]);
     }
     private HttpRequest.Builder newRequestBuilder(String path) {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
@@ -102,7 +97,6 @@ public class ApiService {
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {
                     if (response.statusCode() >= 300) {
-                        System.err.println("Auth Error (" + endpoint + "): " + response.statusCode());
                         return null;
                     }
                     extractCookie(response);
@@ -116,10 +110,7 @@ public class ApiService {
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
         return client.sendAsync(request, HttpResponse.BodyHandlers.discarding())
-                .thenAccept(r -> {
-                    this.currentSessionId = null;
-                    System.out.println("Logged out local session.");
-                });
+                .thenAccept(r -> this.currentSessionId = null);
     }
     public CompletableFuture<Group[]> getAllGroups() {
         HttpRequest request = newRequestBuilder("/api/studyGroups")
@@ -136,7 +127,7 @@ public class ApiService {
     }
 
     public CompletableFuture<Group> createGroup(Group group) {
-        Long userId = group.getCreated_by() != null ? group.getCreated_by() : 1L;
+        long userId = group.getCreated_by() != null ? group.getCreated_by() : 1L;
         String json = gson.toJson(group);
 
         HttpRequest request = newRequestBuilder("/api/studyGroups/" + userId)
@@ -173,7 +164,6 @@ public class ApiService {
         if (groupId == null) return CompletableFuture.failedFuture(new RuntimeException("Group ID missing"));
 
         String json = gson.toJson(task);
-        System.out.println("DEBUG JSON SENT: " + json);
         HttpRequest request = newRequestBuilder("/api/tasks/" + groupId)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json))
@@ -231,7 +221,6 @@ public class ApiService {
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {
                     if (response.statusCode() >= 300) {
-                        System.err.println("Error loading members: " + response.statusCode());
                         return new User[0];
                     }
 
@@ -248,9 +237,6 @@ public class ApiService {
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {
                     if (response.statusCode() >= 300) {
-                        System.err.println("❌ API Error URL: " + request.uri());
-                        System.err.println("❌ Status Code: " + response.statusCode());
-                        System.err.println("❌ Response Body: " + response.body());
                         return null;
                     }
                     return gson.fromJson(response.body(), responseType);
