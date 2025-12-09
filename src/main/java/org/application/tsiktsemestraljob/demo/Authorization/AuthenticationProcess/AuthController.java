@@ -34,7 +34,6 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // Репозиторий для явного сохранения сессии
     private final SecurityContextRepository securityContextRepository =
             new HttpSessionSecurityContextRepository();
 
@@ -59,14 +58,11 @@ public class AuthController {
                 userDetails.getAuthorities()
         );
 
-        // --- ИСПРАВЛЕННЫЙ БЛОК ---
-        SecurityContext context = SecurityContextHolder.createEmptyContext(); // Здесь была опечатка
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(auth);
         SecurityContextHolder.setContext(context);
 
-        // Явно сохраняем контекст в сессию
         securityContextRepository.saveContext(context, request, response);
-        // -------------------------
 
         return UserMapper.toDTO(user);
     }
@@ -78,14 +74,11 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(dto.email(), dto.password())
         );
 
-        // --- ИСПРАВЛЕННЫЙ БЛОК ---
-        SecurityContext context = SecurityContextHolder.createEmptyContext(); // Здесь была опечатка
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(auth);
         SecurityContextHolder.setContext(context);
 
-        // Явно сохраняем контекст в сессию
         securityContextRepository.saveContext(context, request, response);
-        // -------------------------
 
         CustomUserDetails cud = (CustomUserDetails) auth.getPrincipal();
         User user = cud.getUser();
