@@ -384,3 +384,100 @@
     -fx-border-width: 0;
     -fx-padding: 10;
 }
+
+.auth-left-pane {
+    -fx-background-color: #111111;
+}
+
+.auth-right-pane {
+    -fx-background-color: #FFFFFF;
+}
+
+
+.brand-text-large {
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-font-size: 36px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+
+.auth-headline {
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #222222;
+}
+
+
+.auth-description {
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: #666666;
+    -fx-line-spacing: 4px;
+}
+
+
+.btn-primary-large {
+    -fx-background-color: #FFC800;
+    -fx-text-fill: #222222;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-padding: 12px 24px;
+    -fx-cursor: hand;
+}
+
+.btn-primary-large:hover {
+    -fx-background-color: #E6B400;
+}
+
+
+.auth-link {
+    -fx-text-fill: #222222;
+    -fx-font-weight: bold;
+    -fx-underline: false;
+    -fx-padding: 0;
+    -fx-border-color: transparent;
+    -fx-cursor: hand;
+}
+
+.auth-link:hover {
+    -fx-text-fill: #FFC800;
+}
+
+.auth-input {
+    -fx-background-color: #F5F5F5;
+    -fx-background-radius: 8px;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 8px;
+    -fx-padding: 10px;
+    -fx-font-size: 14px;
+    -fx-font-family: 'Segoe UI', sans-serif;
+}
+
+.auth-input:focused {
+    -fx-border-color: #FFC800;
+    -fx-background-color: #FFFFFF;
+}
+
+
+.btn-social {
+    -fx-background-color: #EEEEEE;
+    -fx-text-fill: #444444;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER;
+}
+
+.btn-social:hover {
+    -fx-background-color: #DDDDDD;
+}
+
+.separator-label {
+    -fx-text-fill: #999999;
+    -fx-font-size: 12px;
+}

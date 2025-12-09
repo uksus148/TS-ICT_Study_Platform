@@ -1,9 +1,11 @@
 package com.synapse.client.controller;
 
+import com.synapse.client.MembershipRole;
 import com.synapse.client.TaskStatus;
+import com.synapse.client.UserSession;
 import com.synapse.client.model.Group;
 import com.synapse.client.model.Resource;
-import com.synapse.client.model.Task; // Убедись, что у тебя есть этот класс
+import com.synapse.client.model.Task;
 import com.synapse.client.model.User;
 import com.synapse.client.store.MembersStore;
 import com.synapse.client.store.ResourceStore;
@@ -39,61 +41,48 @@ public class GroupDetailsController {
     private MainController mainController;
     private Group currentGroup;
 
-    @FXML
-    private Label groupNameLabel;
-    @FXML
-    private ListView<Task> tasksListView; // Список задач
-    @FXML
-    private ListView<Resource> resourcesListView;
-    @FXML
-    private ListView<User> membersListView;   // Список имен участников
-    @FXML
-    private PieChart tasksPieChart;
+    @FXML private Label groupNameLabel;
+    @FXML private ListView<Task> tasksListView;
+    @FXML private ListView<Resource> resourcesListView;
+    @FXML private ListView<User> membersListView;
+    @FXML private PieChart tasksPieChart;
 
-    // Метод для связи с главным контроллером
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
     }
 
-    // Самый важный метод! Вызывается при открытии группы
     public void setGroup(Group group) {
         this.currentGroup = group;
-
-        // 1. Устанавливаем название
-        groupNameLabel.setText(group.getName());
-
-        // 2. Тут нужно загрузить задачи для ЭТОЙ группы (запросить у Store/Server)
-        // Пока сделаем фейковые данные для примера:
-        loadDummyData();
+        if (group != null) {
+            groupNameLabel.setText(group.getName());
+            loadData();
+        }
 
         setupTaskListView();
         setupResourceListView();
         setupMembersListView();
     }
 
-    private void loadDummyData() {
-        ObservableList<Task> tasks = TaskStore.getInstance().getTasksByGroupId(currentGroup.getGroup_id());
+    private void loadData() {
+        if (currentGroup == null || currentGroup.getGroup_id() == null) return;
+        Long groupId = currentGroup.getGroup_id();
+
+        ObservableList<Task> tasks = TaskStore.getInstance().getTasksByGroupId(groupId);
         tasksListView.setItems(tasks);
-
-        tasks.addListener((ListChangeListener<Task>) change -> {
-            updateChart(tasks);
-        });
-
+        tasks.addListener((ListChangeListener<Task>) change -> updateChart(tasks));
         updateChart(tasks);
 
-        // Пример участников
-        ObservableList<User> members = MembersStore.getInstance()
-                .getMembersByGroupId(currentGroup.getGroup_id());
+        MembersStore.getInstance().fetchMembersForGroup(groupId);
+        ObservableList<User> members = MembersStore.getInstance().getMembersByGroupId(groupId);
         membersListView.setItems(members);
-        ObservableList<Resource> resources = ResourceStore.getInstance()
-                .getResourcesByGroupId(currentGroup.getGroup_id());
+
+        ResourceStore.getInstance().fetchResourcesForGroup(groupId);
+        ObservableList<Resource> resources = ResourceStore.getInstance().getResourcesByGroupId(groupId);
         resourcesListView.setItems(resources);
     }
 
     private void setupTaskListView() {
-
-        tasksListView.setCellFactory(param -> new ListCell<Task>() {
-
+        tasksListView.setCellFactory(param -> new ListCell<>() {
             private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yy");
 
             @Override
@@ -111,7 +100,6 @@ public class GroupDetailsController {
                     CheckBox checkBox = new CheckBox();
                     checkBox.setSelected(task.getStatus() == TaskStatus.COMPLETED);
                     checkBox.getStyleClass().add("list-checkbox");
-                    // TODO: Add listener to checkBox.selectedProperty()
 
                     BorderPane centerLayout = new BorderPane();
                     Label titleLabel = new Label(task.getTitle());
@@ -122,6 +110,7 @@ public class GroupDetailsController {
                         Label deadlineLabel = new Label(formatter.format(task.getDeadline()));
                         deadlineLabel.getStyleClass().add("list-deadline");
                         centerLayout.setLeft(deadlineLabel);
+
                         FontIcon deadlineIcon = new FontIcon(CALENDAR2_X_FILL);
                         deadlineIcon.setIconSize(11);
                         deadlineIcon.setIconColor(Paint.valueOf("rgb(124, 124, 124)"));
@@ -138,7 +127,6 @@ public class GroupDetailsController {
                     arrowRight.setTranslateY(3);
 
                     rowLayout.getChildren().addAll(checkBox, centerLayout, spacer, arrowRight);
-
                     setGraphic(rowLayout);
 
                     setOnMouseClicked(event -> {
@@ -152,7 +140,7 @@ public class GroupDetailsController {
     }
 
     private void setupResourceListView() {
-        resourcesListView.setCellFactory(param -> new ListCell<Resource>() {
+        resourcesListView.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(Resource resource, boolean empty) {
                 super.updateItem(resource, empty);
@@ -161,35 +149,35 @@ public class GroupDetailsController {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    // 1. Контейнер для строки
                     HBox row = new HBox(10);
                     row.setAlignment(Pos.CENTER_LEFT);
 
-                    // 2. Иконка в зависимости от типа
                     String iconLiteral = "FILE".equals(resource.getType()) ? "bi-file-earmark-text" : "bi-link-45deg";
                     FontIcon icon = new FontIcon(iconLiteral);
                     icon.setIconSize(18);
 
-                    // 3. Название и описание
                     VBox textContainer = new VBox();
                     Label nameLabel = new Label(resource.getName());
                     nameLabel.setStyle("-fx-font-weight: bold;");
-                    Label pathLabel = new Label(resource.getCreated_by()); // Или дата
+
+                    Long creatorId = resource.getCreated_by();
+                    String creatorName = MembersStore.getInstance().getNameById(creatorId);
+                    Label pathLabel = new Label("Uploaded by: " + creatorName);
                     pathLabel.setStyle("-fx-text-fill: gray; -fx-font-size: 10px;");
+
                     textContainer.getChildren().addAll(nameLabel, pathLabel);
 
                     Region spacer = new Region();
                     HBox.setHgrow(spacer, Priority.ALWAYS);
 
-                    // 4. Кнопка действия (Скачать или Открыть)
                     Button actionBtn = new Button();
-                    actionBtn.getStyleClass().add("btn-secondary"); // Если есть такой стиль
+                    actionBtn.getStyleClass().add("btn-secondary");
 
                     if ("LINK".equals(resource.getType())) {
-                        actionBtn.setGraphic(new FontIcon("bi-box-arrow-up-right")); // Иконка перехода
+                        actionBtn.setGraphic(new FontIcon("bi-box-arrow-up-right"));
                         actionBtn.setOnAction(e -> openLink(resource.getPath()));
                     } else {
-                        actionBtn.setGraphic(new FontIcon("bi-download")); // Иконка скачивания
+                        actionBtn.setGraphic(new FontIcon("bi-download"));
                         actionBtn.setOnAction(e -> downloadFile(resource));
                     }
 
@@ -200,51 +188,40 @@ public class GroupDetailsController {
         });
     }
 
-    // --- Логика открытия ссылки ---
     private void openLink(String url) {
         try {
             if (Desktop.isDesktopSupported()) {
                 Desktop.getDesktop().browse(new URI(url));
-            } else {
-                System.err.println("Desktop is not supported");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // --- Логика скачивания файла ---
     private void downloadFile(Resource resource) {
-        // 1. Спрашиваем пользователя, КУДА сохранить
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Resource");
-        fileChooser.setInitialFileName(resource.getName()); // Предлагаем имя
+        fileChooser.setInitialFileName(resource.getName());
 
-        // Получаем сцену для привязки окна
         File destFile = fileChooser.showSaveDialog(resourcesListView.getScene().getWindow());
 
         if (destFile != null) {
             try {
-                // 2. Копируем файл из "хранилища" (пока это локальный путь) в выбранное место
-                // В РЕАЛЬНОСТИ тут будет запрос к серверу: client.download(resource.getId(), destFile);
-
                 File sourceFile = new File(resource.getPath());
                 if (sourceFile.exists()) {
                     Files.copy(sourceFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     System.out.println("File saved to: " + destFile.getAbsolutePath());
                 } else {
-                    System.err.println("Source file not found (Mock mode): " + resource.getPath());
-                    // Тут можно показать Alert пользователю
+                    System.err.println("Source file not found: " + resource.getPath());
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                System.err.println("Error saving file");
             }
         }
     }
 
     private void setupMembersListView() {
-        membersListView.setCellFactory(param -> new ListCell<User>() {
+        membersListView.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(User user, boolean empty) {
                 super.updateItem(user, empty);
@@ -256,9 +233,8 @@ public class GroupDetailsController {
                     HBox row = new HBox(10);
                     row.setAlignment(Pos.CENTER_LEFT);
 
-                    // Имя участника + Email (опционально)
                     VBox infoBox = new VBox();
-                    Label nameLabel = new Label(user.getUsername());
+                    Label nameLabel = new Label(user.getName());
                     nameLabel.setStyle("-fx-font-weight: bold;");
                     Label emailLabel = new Label(user.getEmail());
                     emailLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: gray;");
@@ -268,29 +244,19 @@ public class GroupDetailsController {
                     HBox.setHgrow(spacer, Priority.ALWAYS);
 
                     row.getChildren().addAll(infoBox, spacer);
+                    Long currentLoggedInUser = UserSession.getInstance().getUserId();
 
-                    // --- ЛОГИКА КНОПКИ KICK ---
-                    // 1. Проверяем, кто мы? (Пока хардкод "Me", замените на реального юзера из Session/AuthStore)
-                    String currentLoggedInUser = "Me"; // или SessionStore.getInstance().getCurrentUser().getUsername();
+                    boolean amIAdmin = user.getRole().equals(MembershipRole.OWNER);
+                    boolean isTargetSelf = user.getUser_id().equals(currentLoggedInUser);
 
-                    // 2. Являемся ли мы создателем этой группы?
-                    boolean amIAdmin = currentGroup.getCreated_by().equals(currentLoggedInUser);
-
-                    // 3. Это не мы сами? (Нельзя выгнать себя кнопкой kick, для этого есть кнопка Leave Group)
-                    boolean isTargetSelf = user.getUsername().equals(currentLoggedInUser);
-
-                    // ПОКАЗЫВАЕМ КНОПКУ ТОЛЬКО ЕСЛИ: Я Админ И Цель не Я
                     if (amIAdmin && !isTargetSelf) {
                         Button kickButton = new Button();
-                        kickButton.setGraphic(new FontIcon("bi-person-dash-fill")); // Иконка удаления
-                        kickButton.setStyle("-fx-background-color: #ffebee; -fx-text-fill: #dc3545;"); // Красный оттенок
-
-                        // Обработчик нажатия
+                        kickButton.setGraphic(new FontIcon("bi-person-dash-fill"));
+                        kickButton.setStyle("-fx-background-color: #ffebee; -fx-text-fill: #dc3545;");
                         kickButton.setOnAction(event -> kickUser(user));
 
                         row.getChildren().add(kickButton);
                     }
-                    // ---------------------------
 
                     setGraphic(row);
                 }
@@ -299,27 +265,23 @@ public class GroupDetailsController {
     }
 
     private void kickUser(User user) {
-        // Обязательно спрашиваем подтверждение!
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Kick Member");
-        alert.setHeaderText("Remove " + user.getUsername() + "?");
+        alert.setHeaderText("Remove " + user.getName() + "?");
         alert.setContentText("Are you sure you want to remove this user from the group?");
 
         if (alert.showAndWait().get() == ButtonType.OK) {
-            // Удаляем из хранилища
             MembersStore.getInstance().removeMember(currentGroup.getGroup_id(), user);
         }
     }
 
     private void updateChart(ObservableList<Task> tasks) {
-        // 1. Считаем количество задач по статусам
         int canceledCount = 0;
         int inProgressCount = 0;
         int completedCount = 0;
 
         for (Task task : tasks) {
-            if (task.getStatus() == null) continue; // Защита от null
-
+            if (task.getStatus() == null) continue;
             switch (task.getStatus()) {
                 case CANCELED -> canceledCount++;
                 case IN_PROGRESS -> inProgressCount++;
@@ -327,18 +289,14 @@ public class GroupDetailsController {
             }
         }
 
-        // 2. Создаем данные для графика
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+        if (canceledCount > 0) pieChartData.add(new PieChart.Data("Canceled", canceledCount));
+        if (inProgressCount > 0) pieChartData.add(new PieChart.Data("In Progress", inProgressCount));
+        if (completedCount > 0) pieChartData.add(new PieChart.Data("Completed", completedCount));
 
-        if (canceledCount > 0) pieChartData.add(new PieChart.Data("Canceled (" + canceledCount + ")", canceledCount));
-        if (inProgressCount > 0) pieChartData.add(new PieChart.Data("In Progress (" + inProgressCount + ")", inProgressCount));
-        if (completedCount > 0) pieChartData.add(new PieChart.Data("Completed (" + completedCount + ")", completedCount));
-
-        // 3. Устанавливаем данные в график
         tasksPieChart.setData(pieChartData);
-
-        // (Опционально) Убираем легенду, если она мешает, или меняем заголовок
         tasksPieChart.setTitle("Status Overview");
+        tasksPieChart.setLegendVisible(false);
     }
 
     @FXML
@@ -352,8 +310,6 @@ public class GroupDetailsController {
     public void onAddTask() {
         if (mainController != null) {
             mainController.requestOpenNewTaskEditor(this.currentGroup.getGroup_id());
-        } else {
-            System.err.println("ERROR: Main Controller is null");
         }
     }
 
@@ -366,8 +322,6 @@ public class GroupDetailsController {
     public void onUploadFile() {
         if (mainController != null && currentGroup != null) {
             mainController.requestOpenResourceEditor(currentGroup);
-        } else {
-            System.err.println("MainController or Group is null");
         }
     }
 }

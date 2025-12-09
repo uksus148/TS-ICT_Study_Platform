@@ -4,8 +4,6 @@ import com.synapse.client.store.TaskStore;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.BorderPane;
@@ -18,34 +16,7 @@ public class SidebarController {
     @FXML
     private VBox sidebar;
     @FXML
-    private Button sidebarOff;
-    @FXML
     private Button sidebarOn;
-    @FXML
-    private TextField searchField;
-
-    @FXML
-    private HBox upcomingButton;
-
-    @FXML
-    private HBox todayButton;
-
-    @FXML
-    private HBox calendarButton;
-
-    @FXML
-    private HBox dashboardButton;
-
-    @FXML
-    private HBox groupsButton;
-
-    @FXML
-    private Button settingsButton;
-
-    @FXML
-    private Button signOutButton;
-    @FXML
-    private Button addTaskButton;
     @FXML
     private Label upcomingCount;
     @FXML
@@ -107,7 +78,11 @@ public class SidebarController {
 
     @FXML
     private void onSignOutClicked() {
-        System.out.println("Click on 'Sign out'");
+        if (mainController != null) {
+            mainController.logout();
+        } else {
+            System.out.println("MainController is null");
+        }
     }
     @FXML
     private void onSidebarToggle() {

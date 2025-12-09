@@ -12,6 +12,8 @@ module com.synapse.client { // Желательно переименовать �
     requires javafx.base;
     requires javafx.graphics;
     requires java.desktop;
+    requires com.google.gson;
+    requires java.net.http;
     opens com.synapse.client to javafx.fxml;
     exports com.synapse.client;
 
@@ -22,5 +24,6 @@ module com.synapse.client { // Желательно переименовать �
     opens com.synapse.client.store to javafx.fxml;
 
     exports com.synapse.client.model;
-    opens com.synapse.client.model to javafx.fxml;
+    opens com.synapse.client.model to javafx.fxml, com.google.gson;
+    opens com.synapse.client.model.dto to com.google.gson;
 }

@@ -1,5 +1,6 @@
 package com.synapse.client.controller;
 
+import com.synapse.client.UserSession;
 import com.synapse.client.model.Group;
 import com.synapse.client.model.Resource;
 import com.synapse.client.store.ResourceStore;
@@ -22,7 +23,6 @@ public class ResourceEditorController {
 
     public void setGroup(Group group) {
         this.currentGroup = group;
-        // Очищаем поля при открытии
         nameField.clear();
         pathField.clear();
     }
@@ -49,9 +49,7 @@ public class ResourceEditorController {
         String name = nameField.getText();
         String path = pathField.getText();
 
-        // 1. Простая валидация
         if (name.isEmpty() || path.isEmpty()) {
-            // Можно показать Alert
             System.out.println("Validation Error: Name or Path is empty");
             return;
         }
@@ -67,13 +65,8 @@ public class ResourceEditorController {
         } else {
             resource.setType("FILE");
         }
-        resource.setCreated_by("Me");
-
-        // 3. Сохраняем в Store
+        resource.setCreated_by(UserSession.getInstance().getUserId());
         ResourceStore.getInstance().addResource(resource);
-
-        // 4. Закрываем панель
-        System.out.println("Saving resource for group: " + currentGroup.getName());
         onClose();
     }
 
