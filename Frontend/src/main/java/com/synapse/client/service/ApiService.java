@@ -1,10 +1,7 @@
 package com.synapse.client.service;
 
 import com.google.gson.*;
-import com.synapse.client.model.Group;
-import com.synapse.client.model.Resource;
-import com.synapse.client.model.Task;
-import com.synapse.client.model.User;
+import com.synapse.client.model.*;
 import com.synapse.client.model.dto.LoginRequest;
 import com.synapse.client.model.dto.RegisterRequest;
 
@@ -229,6 +226,42 @@ public class ApiService {
                     } catch (Exception e) {
                         e.printStackTrace();
                         return new User[0];
+                    }
+                });
+    }
+
+    public CompletableFuture<Void> inviteUserToGroup(Long groupId, String email) {
+        String path = String.format("/api/studyGroups/%d/invite?email=%s", groupId, email);
+
+        HttpRequest request = newRequestBuilder(path)
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        return client.sendAsync(request, HttpResponse.BodyHandlers.discarding())
+                .thenAccept(response -> {
+                    if (response.statusCode() >= 300) {
+                        throw new RuntimeException("Failed to invite user: " + response.statusCode());
+                    }
+                });
+    }
+
+    public CompletableFuture<GroupRequest[]> getMyRequests() {
+        HttpRequest request = newRequestBuilder("/api/requests/my")
+                .GET()
+                .build();
+        return sendRequest(request, GroupRequest[].class);
+    }
+
+    public CompletableFuture<Void> respondToRequest(Long requestId, boolean accept) {
+        String action = accept ? "accept" : "reject";
+        HttpRequest request = newRequestBuilder("/api/requests/" + requestId + "/" + action)
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        return client.sendAsync(request, HttpResponse.BodyHandlers.discarding())
+                .thenAccept(response -> {
+                    if (response.statusCode() >= 300) {
+                        throw new RuntimeException("Action failed: " + response.statusCode());
                     }
                 });
     }

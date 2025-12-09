@@ -15,6 +15,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -222,5 +225,28 @@ public class MainController {
             e.printStackTrace();
             System.err.println("Failed to load Auth View");
         }
+    }
+
+    public void showNotificationsView() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/synapse/client/views/NotificationsView.fxml"));
+            Parent view = loader.load();
+
+            NotificationsController controller = loader.getController();
+            controller.setMainController(this);
+
+            mainBorderPane.setCenter(view);
+
+            HBox.setHgrow(view, Priority.ALWAYS);
+            VBox.setVgrow(view, Priority.ALWAYS);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void onNotificationsClick() {
+        showNotificationsView();
     }
 }

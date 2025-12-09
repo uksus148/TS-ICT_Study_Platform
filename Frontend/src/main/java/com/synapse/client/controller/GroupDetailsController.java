@@ -7,9 +7,12 @@ import com.synapse.client.model.Group;
 import com.synapse.client.model.Resource;
 import com.synapse.client.model.Task;
 import com.synapse.client.model.User;
+import com.synapse.client.service.AlertService;
+import com.synapse.client.service.ApiService;
 import com.synapse.client.store.MembersStore;
 import com.synapse.client.store.ResourceStore;
 import com.synapse.client.store.TaskStore;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -315,7 +318,24 @@ public class GroupDetailsController {
 
     @FXML
     public void onInviteMember() {
-        System.out.println("Open Invite Dialog");
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Invite Member");
+        dialog.setHeaderText("Invite a new member to " + currentGroup.getName());
+        dialog.setContentText("Please enter user email:");
+        dialog.showAndWait().ifPresent(email -> {
+            if (email.trim().isEmpty()) return;
+            ApiService.getInstance().inviteUserToGroup(currentGroup.getGroup_id(), email.trim())
+                    .thenAccept(v -> {
+                        Platform.runLater(() ->
+                                AlertService.showInfo("Success", "Invitation sent to " + email));
+                    })
+                    .exceptionally(e -> {
+                        e.printStackTrace();
+                        Platform.runLater(() ->
+                                AlertService.showError("Error", "User not found or already in group"));
+                        return null;
+                    });
+        });
     }
 
     @FXML

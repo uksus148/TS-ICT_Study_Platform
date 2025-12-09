@@ -481,3 +481,33 @@
     -fx-text-fill: #999999;
     -fx-font-size: 12px;
 }
+
+.btn-success {
+    -fx-background-color: #28a745;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+.btn-success:hover {
+    -fx-background-color: #218838;
+}
+
+.btn-danger {
+    -fx-background-color: #dc3545;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+.btn-danger:hover {
+    -fx-background-color: #c82333;
+}
+
+.custom-list-view {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+}
+.custom-list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 5px;
+}
+.custom-list-view .list-cell:empty {
+    -fx-background-color: transparent;
+}

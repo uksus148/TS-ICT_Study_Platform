@@ -82,7 +82,12 @@
 
 
             <Region VBox.vgrow="ALWAYS"/>
-
+            <Button onAction="#onNotificationsClick" styleClass="sidebar-button">
+                <graphic>
+                    <FontIcon iconLiteral="bi-bell-fill" iconSize="20"/>
+                </graphic>
+                <text>Notifications</text>
+            </Button>
             <Button fx:id="settingsButton" text="Settings" styleClass="sidebar-button" onAction="#onSettingsClicked"/>
             <Button fx:id="signOutButton" text="Sign out" styleClass="sidebar-button" onAction="#onSignOutClicked"/>
         </VBox>

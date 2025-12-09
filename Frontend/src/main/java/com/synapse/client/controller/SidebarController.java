@@ -99,4 +99,10 @@ public class SidebarController {
             sidebarRootPane.setPrefWidth(SIDEBAR_WIDTH);
         }
     }
+    @FXML
+    public void onNotificationsClick() {
+        if (mainController != null) {
+            mainController.showNotificationsView();
+        }
+    }
 }
