@@ -1,7 +1,6 @@
 package com.synapse.client.controller;
 
 import com.synapse.client.UserSession;
-import com.synapse.client.model.User;
 import com.synapse.client.service.ApiService;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -29,6 +28,7 @@ public class AuthController {
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
     }
+
     @FXML
     public void onGetStartedClick(ActionEvent event) {
         loadAuthView(event, "/com/synapse/client/views/auth/sign_up.fxml");
@@ -41,7 +41,6 @@ public class AuthController {
 
     @FXML
     public void onGoToSignUp(ActionEvent event) {
-        // Переключение с Входа на Регистрацию
         loadAuthView(event, "/com/synapse/client/views/auth/sign_up.fxml");
     }
 
@@ -78,6 +77,7 @@ public class AuthController {
                     return null;
                 });
     }
+
     @FXML
     public void onRegisterAttempt(ActionEvent event) {
         String username = usernameField.getText();
@@ -89,23 +89,20 @@ public class AuthController {
             return;
         }
         ApiService.getInstance().registerUser(username, email, password)
-                .thenCompose(registeredUser -> {
+                .thenAccept(registeredUser -> {
                     if (registeredUser != null) {
-                        System.out.println("Registered successfully. ID: " + registeredUser.getUser_id());
-                        return ApiService.getInstance().loginUser(email, password);
+                        Platform.runLater(() -> {
+                            System.out.println("Registered & Auto-logged in. ID: " + registeredUser.getUser_id());
+                            UserSession.getInstance().login(registeredUser);
+                            openMainApplication(event);
+                        });
                     } else {
-                        throw new RuntimeException("Registration returned null");
+                        Platform.runLater(() -> showAlert("Registration Error", "Server returned empty response"));
                     }
-                })
-                .thenAccept(loggedInUser -> {
-                    Platform.runLater(() -> {
-                        UserSession.getInstance().login(loggedInUser);
-                        openMainApplication(event);
-                    });
                 })
                 .exceptionally(e -> {
                     e.printStackTrace();
-                    Platform.runLater(() -> showAlert("Registration Failed", "Email might be taken"));
+                    Platform.runLater(() -> showAlert("Registration Failed", "Email might be taken or server error"));
                     return null;
                 });
     }
@@ -126,6 +123,7 @@ public class AuthController {
             stage.getScene().setRoot(view);
         } catch (IOException e) {
             e.printStackTrace();
+            System.err.println("Failed to load FXML: " + fxmlPath);
         }
     }
 
@@ -144,10 +142,12 @@ public class AuthController {
             if (cssUrl != null) {
                 scene.getStylesheets().add(cssUrl.toExternalForm());
             } else {
-                System.err.println("style.css not found");
+                System.err.println("style.css not found! Check file name.");
             }
-            stage.setTitle("Synapse"); // Application name
+
+            stage.setTitle("Synapse");
             stage.setScene(scene);
+            stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

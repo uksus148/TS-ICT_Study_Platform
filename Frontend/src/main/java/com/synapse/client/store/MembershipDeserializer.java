@@ -5,14 +5,12 @@ import com.synapse.client.model.User;
 
 import java.lang.reflect.Type;
 
-// ВНИМАНИЕ: Мы десериализуем в User, хотя json приходит от Membership
 public class MembershipDeserializer implements JsonDeserializer<User> {
     @Override
     public User deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         if (json == null || !json.isJsonObject()) return null;
         JsonObject memberObj = json.getAsJsonObject();
 
-        // Сервер прислал Membership. Нам нужно достать поле "user"
         if (memberObj.has("user") && memberObj.get("user").isJsonObject()) {
             JsonObject userJson = memberObj.get("user").getAsJsonObject();
 
