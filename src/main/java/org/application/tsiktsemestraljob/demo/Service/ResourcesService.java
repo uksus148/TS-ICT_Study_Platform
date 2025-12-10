@@ -23,6 +23,7 @@ public class ResourcesService {
     private final ActivityLogsService activityLogsService;
     private final CurrentUser currentUser;
     private final MembershipService membershipService;
+    private final NotificationService notificationService;
 
     public List<Resources> getResourcesByGroup(Long groupId) {
         User user = currentUser.getCurrentUser();
@@ -50,6 +51,9 @@ public class ResourcesService {
         resources.setUploadedBy(creator);
         Resources saved = resourcesRepository.save(resources);
 
+        notificationService.sendToGroup(groupId,
+                "New resource created: " + saved.getTitle());
+
         activityLogsService.log(creator,
                 "RESOURCE_CREATED",
                 "RESOURCE-ID: " + saved.getId());
@@ -76,6 +80,9 @@ public class ResourcesService {
            oldResources.setTitle(resources.getTitle());
            if(resources.getUploadedAt() != null) {oldResources.setUploadedAt(resources.getUploadedAt());}
 
+        notificationService.sendToGroup(resources.getStudyGroup().getGroupId(),
+                "Resource updated: " + resources.getTitle());
+
            activityLogsService.log(currentUserr,
                    "UPDATE_RESOURCE"
            , "RESOURCE-ID: " + oldResources.getId());
@@ -90,6 +97,9 @@ public class ResourcesService {
         if(!resources.getUploadedBy().equals(currentUserr)) {
             throw new AccessDeniedException("You are not owner of this resource");
         }
+
+        notificationService.sendToGroup(resources.getStudyGroup().getGroupId(),
+                "Resource deleted: " + resources.getTitle());
 
         activityLogsService.log(currentUserr,
                 "DELETE_RESOURCES"
