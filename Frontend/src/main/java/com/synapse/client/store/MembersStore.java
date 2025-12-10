@@ -1,6 +1,7 @@
 package com.synapse.client.store;
 
 import com.synapse.client.model.User;
+import com.synapse.client.service.AlertService;
 import com.synapse.client.service.ApiService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -54,14 +55,23 @@ public class MembersStore {
     }
 
     public void removeMember(Long groupId, User user) {
-        ObservableList<User> members = getMembersByGroupId(groupId);
-        if (members != null) {
-            members.remove(user);
-        }
-    }
+        if (user == null || user.getUser_id() == null) return;
 
-    public void addMember(Long groupId, User user) {
-        getMembersByGroupId(groupId).add(user);
+        ApiService.getInstance().removeMember(groupId, user.getUser_id())
+                .thenAccept(voidResponse -> {
+                    Platform.runLater(() -> {
+                        ObservableList<User> members = getMembersByGroupId(groupId);
+                        if (members != null) {
+                            members.remove(user);
+                        }
+                    });
+                })
+                .exceptionally(e -> {
+                    Platform.runLater(() -> {
+                         AlertService.showError("Error", "Could not remove member: " + e.getMessage());
+                    });
+                    return null;
+                });
     }
 
     public void clear() {

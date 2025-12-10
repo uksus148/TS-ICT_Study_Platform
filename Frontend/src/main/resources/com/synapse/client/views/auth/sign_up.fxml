@@ -20,12 +20,6 @@
                 <Insets bottom="40.0" left="40.0" right="40.0" top="40.0"/>
             </padding>
             <Label styleClass="brand-text-large" text="Synapse"/>
-            <AnchorPane prefHeight="300.0" prefWidth="300.0"
-                        style="-fx-background-color: rgba(255,255,255,0.05); -fx-background-radius: 20;">
-                <VBox.margin>
-                    <Insets top="60.0"/>
-                </VBox.margin>
-            </AnchorPane>
         </VBox>
 
         <VBox alignment="CENTER_LEFT" prefWidth="495.0" styleClass="auth-right-pane" HBox.hgrow="ALWAYS">

@@ -1,6 +1,5 @@
 package com.synapse.client.controller;
 
-import com.synapse.client.enums.MembershipRole;
 import com.synapse.client.enums.TaskStatus;
 import com.synapse.client.UserSession;
 import com.synapse.client.model.Group;
@@ -9,7 +8,6 @@ import com.synapse.client.model.Task;
 import com.synapse.client.model.User;
 import com.synapse.client.service.AlertService;
 import com.synapse.client.service.ApiService;
-import com.synapse.client.service.StompClient;
 import com.synapse.client.store.MembersStore;
 import com.synapse.client.store.ResourceStore;
 import com.synapse.client.store.TaskStore;
@@ -60,26 +58,11 @@ public class GroupDetailsController {
         if (group != null) {
             groupNameLabel.setText(group.getName());
             loadData();
-            subscribeToGroupUpdates(group.getGroup_id());
         }
 
         setupTaskListView();
         setupResourceListView();
         setupMembersListView();
-    }
-
-    private void subscribeToGroupUpdates(Long groupId) {
-        String topic = "/topic/group/" + groupId;
-
-        StompClient.getInstance().subscribe(topic, message -> {
-            System.out.println("DEBUG: WebSocket Notification: " + message);
-
-            Platform.runLater(() -> {
-                TaskStore.getInstance().fetchTasksByGroupId(groupId);
-                ResourceStore.getInstance().fetchResourcesForGroup(groupId);
-                MembersStore.getInstance().fetchMembersForGroup(groupId);
-            });
-        });
     }
 
     private void loadData() {
@@ -229,7 +212,6 @@ public class GroupDetailsController {
                 File sourceFile = new File(resource.getPath());
                 if (sourceFile.exists()) {
                     Files.copy(sourceFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    System.out.println("File saved to: " + destFile.getAbsolutePath());
                 } else {
                     System.err.println("Source file not found: " + resource.getPath());
                 }
@@ -267,7 +249,7 @@ public class GroupDetailsController {
 
                     boolean amIOwner = currentGroup.getCreated_by() != null
                             && currentGroup.getCreated_by().equals(currentLoggedInUserId);
-                    System.out.print(currentGroup.getCreated_by());
+
                     boolean isTargetSelf = user.getUser_id().equals(currentLoggedInUserId);
 
                     if (amIOwner && !isTargetSelf) {
@@ -337,17 +319,14 @@ public class GroupDetailsController {
     @FXML
     public void onInviteMember() {
         if (currentGroup == null) return;
-
         ApiService.getInstance().createInvitation(currentGroup.getGroup_id())
-                .thenAccept(response -> {
-                    Platform.runLater(() -> {
-                        if (response != null && response.token() != null) {
-                            showInviteDialog(response.token());
-                        } else {
-                            AlertService.showError("Error", "Failed to generate invitation.");
-                        }
-                    });
-                })
+                .thenAccept(response -> Platform.runLater(() -> {
+                    if (response != null && response.token() != null) {
+                        showInviteDialog(response.token());
+                    } else {
+                        AlertService.showError("Error", "Failed to generate invitation.");
+                    }
+                }))
                 .exceptionally(e -> {
                     Platform.runLater(() -> AlertService.showError("Error", "Connection error: " + e.getMessage()));
                     return null;
@@ -355,11 +334,11 @@ public class GroupDetailsController {
     }
 
     private void showInviteDialog(String token) {
-        TextInputDialog dialog = new TextInputDialog(token); // Токен уже внутри поля
+        TextInputDialog dialog = new TextInputDialog(token);
         dialog.setTitle("Invitation Code");
         dialog.setHeaderText("Share this code with others to join:");
         dialog.setContentText("Code:");
-        dialog.setGraphic(null); // Убираем иконку вопроса
+        dialog.setGraphic(null);
         dialog.showAndWait();
     }
 

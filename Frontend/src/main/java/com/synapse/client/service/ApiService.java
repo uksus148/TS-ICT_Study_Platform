@@ -1,10 +1,10 @@
 package com.synapse.client.service;
 
 import com.google.gson.*;
-        import com.synapse.client.model.*;
-        import com.synapse.client.model.dto.*; // Импортируем все DTO (включая новые инвайты)
+import com.synapse.client.model.*;
+import com.synapse.client.model.dto.*;
 
-        import java.net.URI;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -238,6 +238,21 @@ public class ApiService {
                 });
     }
 
+    public CompletableFuture<Void> removeMember(Long groupId, Long userId) {
+        String path = "/api/studyGroups/" + groupId + "/members/" + userId;
+
+        HttpRequest request = newRequestBuilder(path)
+                .DELETE()
+                .build();
+
+        return client.sendAsync(request, HttpResponse.BodyHandlers.discarding())
+                .thenAccept(response -> {
+                    if (response.statusCode() >= 300) {
+                        throw new RuntimeException("Failed to remove member. Status: " + response.statusCode());
+                    }
+                });
+    }
+
     // --- INVITATIONS (NEW) ---
 
     public CompletableFuture<InviteCreateResponseDTO> createInvitation(Long groupId) {
@@ -266,10 +281,7 @@ public class ApiService {
     // --- GROUP REQUESTS (OLD LOGIC - KEEP IF NEEDED) ---
 
     public CompletableFuture<GroupRequest[]> getMyRequests() {
-        HttpRequest request = newRequestBuilder("/api/requests/my")
-                .GET()
-                .build();
-        return sendRequest(request, GroupRequest[].class);
+        return CompletableFuture.completedFuture(new GroupRequest[0]);
     }
 
     public CompletableFuture<Void> respondToRequest(Long requestId, boolean accept) {
@@ -303,11 +315,9 @@ public class ApiService {
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {
                     if (response.statusCode() >= 300) {
-                        // Можно добавить логирование ошибки здесь
                         System.err.println("Request failed: " + response.statusCode() + " | Body: " + response.body());
                         return null;
                     }
-                    // Если ожидаемый тип Void, возвращаем null без попытки парсинга JSON
                     if (responseType == Void.class) {
                         return null;
                     }

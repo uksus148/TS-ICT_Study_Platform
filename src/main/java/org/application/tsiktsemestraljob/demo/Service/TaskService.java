@@ -5,10 +5,8 @@ import org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProces
 import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
 import org.application.tsiktsemestraljob.demo.Entities.Task;
 import org.application.tsiktsemestraljob.demo.Entities.User;
-import org.application.tsiktsemestraljob.demo.Enums.TaskStatus;
 import org.application.tsiktsemestraljob.demo.Repository.StudyGroupsRepository;
 import org.application.tsiktsemestraljob.demo.Repository.TaskRepository;
-import org.application.tsiktsemestraljob.demo.Repository.UserRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -67,7 +65,7 @@ public class TaskService {
         taskToUpdate.setTitle(task.getTitle());
 
         notificationService.sendToGroup(taskToUpdate.getStudyGroup().getGroupId(),
-                "New task created: " + task.getTitle());
+                "New task updated: " + task.getTitle());
 
         activityLogsService.log(creator,
                 "UPDATE_TASK"
@@ -87,7 +85,7 @@ public class TaskService {
         }
 
         notificationService.sendToGroup(task.getStudyGroup().getGroupId(),
-                "New task created: " + task.getTitle());
+                "Task deleted: " + task.getTitle());
 
         activityLogsService.log(user,
                 "TASK_DELETED",

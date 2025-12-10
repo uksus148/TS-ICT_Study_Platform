@@ -34,7 +34,6 @@ public class StompClient {
                     this.webSocket = ws;
                     String connectFrame = "CONNECT\naccept-version:1.1,1.0\nhost:localhost\n\n\0";
                     ws.sendText(connectFrame, true);
-                    System.out.println("WebSocket Connected!");
                 })
                 .exceptionally(e -> {
                     System.err.println("WebSocket connection failed: " + e.getMessage());
@@ -53,7 +52,6 @@ public class StompClient {
 
         String subscribeFrame = "SUBSCRIBE\nid:" + subId + "\ndestination:" + topic + "\n\n\0";
         webSocket.sendText(subscribeFrame, true);
-        System.out.println("Subscribed to: " + topic);
     }
 
     private class WebSocketListener implements WebSocket.Listener {

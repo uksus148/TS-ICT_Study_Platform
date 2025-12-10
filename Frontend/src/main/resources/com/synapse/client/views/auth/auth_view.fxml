@@ -22,8 +22,6 @@
                     <Insets bottom="60.0"/>
                 </VBox.margin>
             </Label>
-            <AnchorPane prefHeight="300.0" prefWidth="300.0"
-                        style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 20;"/>
         </VBox>
 
         <VBox alignment="CENTER_LEFT" prefWidth="495.0" styleClass="auth-right-pane" HBox.hgrow="ALWAYS">

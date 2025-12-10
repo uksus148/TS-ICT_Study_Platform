@@ -4,13 +4,14 @@ import com.synapse.client.UserSession;
 import com.synapse.client.model.Group;
 import com.synapse.client.model.Task;
 import com.synapse.client.service.ApiService;
-import com.synapse.client.store.GroupsStore;
-import com.synapse.client.store.MembersStore;
-import com.synapse.client.store.ResourceStore;
-import com.synapse.client.store.TaskStore;
+import com.synapse.client.service.StompClient;
+import com.synapse.client.store.*;
 import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -19,11 +20,16 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+import org.controlsfx.control.Notifications;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MainController {
+    private final Set<Long> subscribedGroupIds = new HashSet<>();
     private MainController mainController;
     @FXML
     private BorderPane mainBorderPane;
@@ -56,11 +62,12 @@ public class MainController {
         if (sidebarController != null) {
             sidebarController.setMainController(this);
         } else {
-            System.out.println("Warning: SidebarController is null (check fx:id in FXML)");
         }
     }
 
     public void onSuccessfulLogin() {
+        setupGlobalGroupSubscriptions();
+        subscribeToPersonalUpdates();
         refreshAllData();
         showGroupsView();
     }
@@ -253,5 +260,104 @@ public class MainController {
     @FXML
     public void onNotificationsClick() {
         showNotificationsView();
+    }
+    public Stage getStage() {
+        if (mainBorderPane != null && mainBorderPane.getScene() != null) {
+            return (Stage) mainBorderPane.getScene().getWindow();
+        }
+        return null;
+    }
+
+    private void setupGlobalGroupSubscriptions() {
+        ObservableList<Group> groups = GroupsStore.getInstance().getGroups();
+        groups.addListener((ListChangeListener<Group>) change -> {
+            while (change.next()) {
+                if (change.wasAdded()) {
+                    for (Group group : change.getAddedSubList()) {
+                        subscribeToGroupTopic(group.getGroup_id());
+                    }
+                }
+            }
+        });
+
+        for (Group group : groups) {
+            subscribeToGroupTopic(group.getGroup_id());
+        }
+    }
+
+    private void subscribeToGroupTopic(Long groupId) {
+        if (subscribedGroupIds.contains(groupId)) {
+            return;
+        }
+        String topic = "/topic/group/" + groupId;
+        StompClient.getInstance().subscribe(topic, message -> {
+            Platform.runLater(() -> {
+                if (message.contains("New task created")) {
+                    TaskStore.getInstance().fetchTasksByGroupId(groupId);
+                    showPopupNotification("Tasks Created", message);
+                }
+                else if (message.contains("New task updated")) {
+                    TaskStore.getInstance().fetchTasksByGroupId(groupId);
+                    showPopupNotification("Tasks Updated", message);
+                }
+                else if (message.contains("Task deleted")) {
+                    TaskStore.getInstance().fetchTasksByGroupId(groupId);
+                    showPopupNotification("Tasks Deleted", message);
+                }
+
+                else if (message.contains("New resource created")) {
+                    ResourceStore.getInstance().fetchResourcesForGroup(groupId);
+                    showPopupNotification("New Resource", message);
+                }
+                else if (message.contains("Resource updated")) {
+                    ResourceStore.getInstance().fetchResourcesForGroup(groupId);
+                    showPopupNotification("Resource updated", message);
+                }
+                else if (message.contains("Resource deleted")) {
+                    ResourceStore.getInstance().fetchResourcesForGroup(groupId);
+                    showPopupNotification("Resource deleted", message);
+                }
+
+                else if (message.contains("MEMBER") || message.contains("JOIN") || message.contains("LEFT")) {
+                    MembersStore.getInstance().fetchMembersForGroup(groupId);
+                }
+            });
+        });
+
+        subscribedGroupIds.add(groupId);
+    }
+
+    private void showPopupNotification(String title, String message) {
+        Platform.runLater(() -> {
+            try {
+                Notifications notification = Notifications.create()
+                        .title(title)
+                        .text(message)
+                        .hideAfter(Duration.seconds(5))
+                        .position(Pos.BOTTOM_RIGHT);
+                if (mainController != null && mainController.getStage() != null) {
+                    notification.owner(mainController.getStage());
+                }
+                notification.showInformation();
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+            }
+        });
+    }
+
+    private void subscribeToPersonalUpdates() {
+        Long userId = UserSession.getInstance().getUserId();
+        if (userId == null) return;
+
+        String topic = "/queue/user/" + userId;
+
+        StompClient.getInstance().subscribe(topic, message -> {
+            Platform.runLater(() -> {
+                if (message.contains("You have been removed from group")) {
+                    RequestStore.getInstance().fetchRequests();
+                    showPopupNotification("Remove from group", "You have been removed from group.");
+                }
+            });
+        });
     }
 }
