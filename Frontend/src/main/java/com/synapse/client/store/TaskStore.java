@@ -76,16 +76,20 @@ public class TaskStore {
 
     public void fetchTasksByGroupId(Long groupId) {
         ApiService.getInstance().getAllTasks()
-                .thenAccept(tasks -> {
-                    if (tasks != null) {
+                .thenAccept(downloadedTasks -> {
+                    if (downloadedTasks != null) {
                         Platform.runLater(() -> {
-                            List<Task> filtered = Arrays.stream(tasks)
+                            List<Task> newGroupTasks = Arrays.stream(downloadedTasks)
                                     .filter(t -> groupId.equals(t.getGroup_id()))
                                     .toList();
-
-                            getTasksByGroupId(groupId).setAll(filtered);
+                            this.tasks.removeIf(t -> groupId.equals(t.getGroup_id()));
+                            this.tasks.addAll(newGroupTasks);
                         });
                     }
+                })
+                .exceptionally(e -> {
+                    System.err.println("Failed to fetch tasks: " + e.getMessage());
+                    return null;
                 });
     }
 

@@ -5,7 +5,6 @@ import com.synapse.client.model.Group;
 import com.synapse.client.service.AlertService;
 import com.synapse.client.service.ApiService;
 import com.synapse.client.store.GroupsStore;
-import com.synapse.client.store.TaskStore;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -54,7 +53,7 @@ public class GroupsController {
     }
     private void setupGroupListView() {
 
-        groupsListView.setCellFactory(param -> new ListCell<Group>() {
+        groupsListView.setCellFactory(param -> new ListCell<>() {
 
             @Override
             protected void updateItem(Group group, boolean empty) {
@@ -80,7 +79,7 @@ public class GroupsController {
                     }
 
                     if (group.getCreated_by() != null) {
-                        Label createdByLabel = new Label("Created by: "+group.getCreated_by());
+                        Label createdByLabel = new Label("Created by: " + group.getGroupOwner());
                         createdByLabel.getStyleClass().add("list-created-by");
                         FontIcon personFill = new FontIcon(PERSON_FILL);
                         personFill.setIconSize(11);

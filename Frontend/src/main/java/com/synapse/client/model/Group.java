@@ -11,8 +11,8 @@ public class Group {
     private String description;
     @SerializedName(value = "created_by", alternate = {"createdBy"})
     private Long created_by;
-    @SerializedName(value = "created_by_name", alternate = {"createdByName"})
-    private String created_by_name;
+    @SerializedName(value = "groupOwner")
+    private String groupOwner;
     public Group() {
     }
     public Group(Long group_id, String name, String description, Long created_by) {
@@ -42,8 +42,8 @@ public class Group {
     public void setCreated_by(Long created_by) {
         this.created_by = created_by;
     }
-    public String getCreated_by_name() {
-        return created_by_name;
+    public String getGroupOwner() {
+        return groupOwner;
     }
     @Override
     public String toString() {

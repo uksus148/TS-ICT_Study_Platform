@@ -115,7 +115,7 @@ public class ApiService {
     // --- GROUPS ---
 
     public CompletableFuture<Group[]> getAllGroups() {
-        HttpRequest request = newRequestBuilder("/api/studyGroups")
+        HttpRequest request = newRequestBuilder("/api/studyGroups/my-groups")
                 .GET()
                 .build();
         return sendRequest(request, Group[].class);
