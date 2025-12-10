@@ -6,14 +6,18 @@
             styleClass="main"
             xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.synapse.client.MainController">
+            fx:controller="com.synapse.client.controller.MainController">
 
     <left>
         <fx:include fx:id="sidebar" source="SidebarView.fxml"/>
     </left>
 
     <center>
-        <fx:include source="views/TodayView.fxml"/>
+        <fx:include fx:id="todayView" source="TodayView.fxml"/>
     </center>
+
+    <right>
+        <fx:include fx:id="taskEditor" source="TaskEditor.fxml"/>
+    </right>
 
 </BorderPane>

@@ -1,5 +1,7 @@
 package com.synapse.client;
 
+import com.synapse.client.controller.AuthController;
+import com.synapse.client.controller.MainController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,7 +14,7 @@ import java.net.URL;
 public class MainApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("MainView.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("views/auth/auth_view.fxml"));
         Parent root = fxmlLoader.load();
 
         Scene scene = new Scene(root, 1200, 800);
