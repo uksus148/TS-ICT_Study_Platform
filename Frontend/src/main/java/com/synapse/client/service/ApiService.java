@@ -2,8 +2,7 @@ package com.synapse.client.service;
 
 import com.google.gson.*;
 import com.synapse.client.model.*;
-import com.synapse.client.model.dto.LoginRequest;
-import com.synapse.client.model.dto.RegisterRequest;
+import com.synapse.client.model.dto.*; // Импортируем все DTO (включая новые инвайты)
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -63,6 +62,7 @@ public class ApiService {
 
         cookieHeader.ifPresent(rawCookie -> this.currentSessionId = rawCookie.split(";")[0]);
     }
+
     private HttpRequest.Builder newRequestBuilder(String path) {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + path));
@@ -72,6 +72,8 @@ public class ApiService {
         }
         return builder;
     }
+
+    // --- AUTHENTICATION ---
 
     public CompletableFuture<User> loginUser(String email, String password) {
         LoginRequest requestDto = new LoginRequest(email, password);
@@ -109,18 +111,14 @@ public class ApiService {
         return client.sendAsync(request, HttpResponse.BodyHandlers.discarding())
                 .thenAccept(r -> this.currentSessionId = null);
     }
+
+    // --- GROUPS ---
+
     public CompletableFuture<Group[]> getAllGroups() {
         HttpRequest request = newRequestBuilder("/api/studyGroups")
                 .GET()
                 .build();
         return sendRequest(request, Group[].class);
-    }
-
-    public CompletableFuture<Task[]> getAllTasks() {
-        HttpRequest request = newRequestBuilder("/api/tasks")
-                .GET()
-                .build();
-        return sendRequest(request, Task[].class);
     }
 
     public CompletableFuture<Group> createGroup(Group group) {
@@ -154,6 +152,15 @@ public class ApiService {
                         throw new RuntimeException("Error deleting group: " + response.statusCode());
                     }
                 });
+    }
+
+    // --- TASKS ---
+
+    public CompletableFuture<Task[]> getAllTasks() {
+        HttpRequest request = newRequestBuilder("/api/tasks")
+                .GET()
+                .build();
+        return sendRequest(request, Task[].class);
     }
 
     public CompletableFuture<Task> createTask(Task task) {
@@ -190,6 +197,8 @@ public class ApiService {
                 });
     }
 
+    // --- RESOURCES ---
+
     public CompletableFuture<Resource> createResource(Resource resource) {
         Long groupId = resource.getGroup_id();
 
@@ -220,7 +229,6 @@ public class ApiService {
                     if (response.statusCode() >= 300) {
                         return new User[0];
                     }
-
                     try {
                         return gson.fromJson(response.body(), User[].class);
                     } catch (Exception e) {
@@ -230,20 +238,32 @@ public class ApiService {
                 });
     }
 
-    public CompletableFuture<Void> inviteUserToGroup(Long groupId, String email) {
-        String path = String.format("/api/studyGroups/%d/invite?email=%s", groupId, email);
+    // --- INVITATIONS (NEW) ---
 
-        HttpRequest request = newRequestBuilder(path)
+    public CompletableFuture<InviteCreateResponseDTO> createInvitation(Long groupId) {
+        HttpRequest request = newRequestBuilder("/api/invitations/" + groupId)
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
-        return client.sendAsync(request, HttpResponse.BodyHandlers.discarding())
-                .thenAccept(response -> {
-                    if (response.statusCode() >= 300) {
-                        throw new RuntimeException("Failed to invite user: " + response.statusCode());
-                    }
-                });
+        return sendRequest(request, InviteCreateResponseDTO.class);
     }
+
+    public CompletableFuture<InviteAcceptDTO> acceptInvitation(String token) {
+        HttpRequest request = newRequestBuilder("/api/invitations/accept/" + token)
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        return sendRequest(request, InviteAcceptDTO.class);
+    }
+
+    public CompletableFuture<InviteValidateDTO> validateInvitation(String token) {
+        HttpRequest request = newRequestBuilder("/api/invitations/validate/" + token)
+                .GET()
+                .build();
+        return sendRequest(request, InviteValidateDTO.class);
+    }
+
+    // --- GROUP REQUESTS (OLD LOGIC - KEEP IF NEEDED) ---
 
     public CompletableFuture<GroupRequest[]> getMyRequests() {
         HttpRequest request = newRequestBuilder("/api/requests/my")
@@ -266,13 +286,26 @@ public class ApiService {
                 });
     }
 
+    // --- HELPER METHODS ---
+
     private <T> CompletableFuture<T> sendRequest(HttpRequest request, Class<T> responseType) {
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {
                     if (response.statusCode() >= 300) {
+                        // Можно добавить логирование ошибки здесь
+                        System.err.println("Request failed: " + response.statusCode() + " | Body: " + response.body());
                         return null;
                     }
-                    return gson.fromJson(response.body(), responseType);
+                    // Если ожидаемый тип Void, возвращаем null без попытки парсинга JSON
+                    if (responseType == Void.class) {
+                        return null;
+                    }
+                    try {
+                        return gson.fromJson(response.body(), responseType);
+                    } catch (JsonSyntaxException e) {
+                        System.err.println("JSON Parse Error: " + e.getMessage());
+                        return null;
+                    }
                 })
                 .exceptionally(e -> {
                     e.printStackTrace();

@@ -1,7 +1,7 @@
 package com.synapse.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import com.synapse.client.GroupRequestStatus;
+import com.synapse.client.enums.GroupRequestStatus;
 
 public class GroupRequest {
     @SerializedName(value = "id", alternate = {"requestId", "request_id"})

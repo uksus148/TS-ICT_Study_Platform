@@ -1,4 +1,4 @@
-package com.synapse.client;
+package com.synapse.client.enums;
 
 public enum GroupRequestStatus {
     PENDING,

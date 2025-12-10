@@ -30,6 +30,7 @@
     -fx-border-width: 0;
     -fx-spacing: 15px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 0);
+    -fx-min-width: 280px;
 }
 
 .sidebar-top {

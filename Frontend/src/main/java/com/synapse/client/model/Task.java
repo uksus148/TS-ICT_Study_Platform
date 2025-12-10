@@ -1,7 +1,7 @@
 package com.synapse.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import com.synapse.client.TaskStatus;
+import com.synapse.client.enums.TaskStatus;
 import com.synapse.client.UserSession;
 
 import java.time.LocalDateTime;

@@ -1,5 +1,6 @@
 package com.synapse.client.controller;
 
+import com.synapse.client.store.GroupsStore;
 import com.synapse.client.store.TaskStore;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -21,6 +22,8 @@ public class SidebarController {
     private Label upcomingCount;
     @FXML
     private Label todayCount;
+    @FXML
+    private Label groupsCount;
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
     }
@@ -32,6 +35,9 @@ public class SidebarController {
 
         upcomingCount.textProperty().bind(
                 TaskStore.getInstance().getUpcomingTaskCountProperty().asString()
+        );
+        groupsCount.textProperty().bind(
+                GroupsStore.getInstance().getGroupsCountProperty().asString()
         );
         sidebarRootPane.setPrefWidth(SIDEBAR_WIDTH);
     }
@@ -50,16 +56,6 @@ public class SidebarController {
         } else {
             System.out.println("MainController is null");
         }
-    }
-
-    @FXML
-    private void onCalendarClicked() {
-        System.out.println("Click on 'Calendar'");
-    }
-
-    @FXML
-    private void onDashboardClicked() {
-        System.out.println("Click on 'Dashboard'");
     }
 
     @FXML

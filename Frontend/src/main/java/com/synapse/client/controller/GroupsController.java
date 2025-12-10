@@ -1,7 +1,12 @@
 package com.synapse.client.controller;
 
+import com.synapse.client.enums.AcceptStatus;
 import com.synapse.client.model.Group;
+import com.synapse.client.service.AlertService;
+import com.synapse.client.service.ApiService;
 import com.synapse.client.store.GroupsStore;
+import com.synapse.client.store.TaskStore;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -9,6 +14,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -21,18 +27,12 @@ import static org.kordamp.ikonli.bootstrapicons.BootstrapIcons.*;
 public class GroupsController {
     public MainController mainController;
     @FXML
+    private Label labelCount;
+    @FXML
     private ListView<Group> groupsListView;
     @FXML
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
-    }
-    @FXML
-    public void onGroupList() {
-
-    }
-    @FXML
-    public void onGroupGrid() {
-
     }
     @FXML
     private void onAddGroupClicked() {
@@ -44,6 +44,9 @@ public class GroupsController {
     }
     @FXML
     public void initialize() {
+        labelCount.textProperty().bind(
+                GroupsStore.getInstance().getGroupsCountProperty().asString()
+        );
         GroupsStore groupStore = GroupsStore.getInstance();
         ObservableList<Group> groups = groupStore.getGroups();
         groupsListView.setItems(groups);
@@ -110,5 +113,44 @@ public class GroupsController {
                 }
             }
         });
+    }
+
+    @FXML
+    private void onJoinGroupClicked() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Join Group");
+        dialog.setHeaderText("Enter Invitation Code");
+        dialog.setContentText("Code:");
+
+        dialog.showAndWait().ifPresent(token -> {
+            String code = token.trim();
+            if (code.isEmpty()) return;
+
+            ApiService.getInstance().acceptInvitation(code)
+                    .thenAccept(response -> {
+                        if (response == null) {
+                            AlertService.showError("Error", "Invalid code or server error.");
+                            return;
+                        }
+                        if (response.status() == AcceptStatus.USED || response.status() == AcceptStatus.ACTIVE) {
+
+                            AlertService.showInfo("Success", "You have successfully joined the group!");
+                            Platform.runLater(this::refreshGroupsList);
+
+                        } else if (response.status() == AcceptStatus.EXPIRED) {
+                            AlertService.showError("Failed to join", "This invitation code has expired.");
+                        } else {
+                            AlertService.showError("Failed to join", "Unknown status: " + response.status());
+                        }
+                    })
+                    .exceptionally(e -> {
+                        AlertService.showError("Error", "Connection failed: " + e.getMessage());
+                        return null;
+                    });
+        });
+    }
+
+    private void refreshGroupsList() {
+        GroupsStore.getInstance().fetchGroupsFromServer();
     }
 }
