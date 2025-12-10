@@ -116,9 +116,8 @@ mvn clean javafx:run
 
 ### 📸 Screenshots
 
-```markdown!
 ![Sign In Screen](docs/sign_in.png)
 ![Sign Up Screen](docs/sign_up.png)
 ![Groups Screen](docs/groups.png)
 ![Group detail Screen](docs/group_detail.png)
-```
+![Edit profile Screen](docs/edit_profile.png)

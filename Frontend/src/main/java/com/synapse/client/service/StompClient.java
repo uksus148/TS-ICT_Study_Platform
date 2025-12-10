@@ -89,9 +89,6 @@ public class StompClient {
         // Generate a unique ID for this subscription based on the topic
         String subId = "sub-" + topic.hashCode();
         subscriptions.put(subId, callback);
-
-        System.out.println("Subscribed to: " + topic);
-
         // Send STOMP SUBSCRIBE Frame
         String subscribeFrame = "SUBSCRIBE\nid:" + subId + "\ndestination:" + topic + "\n\n\0";
         webSocket.sendText(subscribeFrame, true);
