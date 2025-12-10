@@ -1,121 +1,124 @@
-## Synapse Frontend — JavaFX Client
+# 🧠 Synapse — Collaborative Study Platform
 
-This document details the Frontend component (JavaFX Client) of the Synapse project. It covers application goals, UI architecture, key views, development setup, and the interface contracts with the backend services. The comprehensive API and data model documentation are managed via Swagger/OpenAPI on the backend side.
+**Synapse** is an educational platform designed to facilitate collaborative learning. It allows students to form study groups, manage shared tasks, solve problems together, and exchange resources in a centralized environment.
 
------
+The project is implemented as a distributed system consisting of two distinct parts:
 
-### 🚀 Project Overview and Application Goals
-
-Synapse is a collaborative study platform designed for teams and individual learners. It enables users to:
-
-* Manage study tasks and daily schedules.
-* Collaborate in groups, share resources, and communicate.
-* Track progress and manage user profiles.
-
-The Frontend is a **JavaFX desktop application** providing a modern, responsive user interface built on **FXML templates** and **CSS stylesheets**.
-
-**Target Users:** Students, instructors, and small study groups.
-**Problem Solved:** Coordination of study activities, transparent task organization, and group collaboration in a centralized hub.
+1.  **Backend (Server):** REST API & WebSocket server built with **Spring Boot**.
+2.  **Frontend (Client):** A rich desktop application built with **JavaFX**.
 
 -----
 
-### 🏗️ Frontend Architecture Overview
+## 🏗️ System Architecture
 
-The client-side architecture follows a Model-View-Controller (MVC) approach (common in JavaFX applications). It interacts with the backend using dedicated service layers.
+The application follows a Client-Server architecture. The JavaFX client acts as a "thick client," handling presentation logic and state management, while the Spring Boot server handles business logic, persistence, and security.
 
 ```mermaid
 flowchart LR
-  subgraph Client[JavaFX Frontend]
-    V[View (FXML + CSS)] --> C[Controller]
-    C --> S[Service Layer (HTTP/WS)]
+  subgraph Client [JavaFX Desktop App]
+    UI[Reactive UI] <--> Store[State Store]
+    Store <--> Service[Async Service Layer]
   end
 
-  S -->|REST (JSON)| API[(Backend REST API)]
-  S -->|WebSocket| WS[(Backend WS)]
+  subgraph Server [Spring Boot Backend]
+    API[REST Controllers]
+    WS[WebSocket Handler]
+    DB[(Database)]
+    Sec[Spring Security]
+  end
+
+  Service -->|REST / JSON| API
+  Service <-->|STOMP / WebSocket| WS
+  API --> DB
+  API --> Sec
 ```
 
-* **View (FXML + CSS):** Defines the application layout and visual presentation. Located in `src/main/resources/.../views/`.
-* **Controller:** Contains the presentation logic, handles user input, and coordinates data transfer by calling the Service Layer. Located in `com.synapse.client.controller`.
-* **Service Layer:** Dedicated Java classes responsible for handling all network communication (HTTP/WebSocket) with the backend.
+-----
 
-### 🗂️ Key Frontend View Files
+## 🔧 Backend Overview (Server)
 
-| Path | Description |
-| :--- | :--- |
-| `views/auth/auth_view.fxml` | Initial marketing/landing screen. |
-| `views/auth/sign_in.fxml` | User login screen. |
-| `views/auth/sign_up.fxml` | User registration screen. |
-| `views/MainView.fxml` | Primary application container with navigation. |
-| `views/TodayView.fxml` | Daily tasks and overview dashboard. |
-| `views/ProfileView.fxml` | User profile management and settings. |
-| `views/groups/GroupsView.fxml` | List of study groups. |
-| `views/groups/group_details.fxml` | Detailed view of a specific group. |
-| **Styles:** `src/main/resources/com/synapse/client/style.css` | Global CSS styling for the application. |
+The server side is a robust REST API application providing the core logic for the platform.
+
+### Key Technologies
+
+* **Framework:** Spring Boot 3
+* **Security:** Spring Security (Session-based)
+* **Real-time:** WebSockets (STOMP) for notifications
+* **Testing:** JUnit & Mockito
+* **Containerization:** Docker (for app and test execution)
+
+### 🔐 Security & Architecture Decision
+
+The application uses **Session-based Authentication** (Stateful).
+
+> *Note:* While REST APIs typically strive for statelessness (using JWT), this project deliberately uses Session Cookies (`JSESSIONID`). Given that the client is a **JavaFX Desktop Application** (Rich Client) rather than a browser-based SPA (like React), maintaining a session state is a valid and efficient architectural choice that simplifies security context management.
+
+### 📚 API Documentation
+
+The full API specification is available via Swagger UI (requires the backend to be running):
+
+* **URL:** `http://localhost:8080/swagger-ui/index.html`
 
 -----
 
-### 🌐 Backend Integration and API Contracts
+## 💻 Frontend Overview (Client)
 
-The Frontend client relies entirely on the backend to provide business logic, persistence, and real-time data.
+The client is a modern JavaFX application that leverages a **Reactive Architecture** to ensure a responsive user experience.
 
-#### REST API Documentation
+### Key Features
 
-The complete list of REST endpoints (GET, POST, PUT, DELETE), parameters, response codes, and data transfer object (DTO) schemas can be found in the backend's API documentation.
+* **Centralized State Management:** Uses a **Store Pattern** (similar to Redux). Controllers do not store data; they bind to `ObservableLists` in Stores (`TaskStore`, `GroupsStore`).
+* **Reactive UI:** Views like "Today" and "Upcoming" are live `FilteredList` views of a single master data source.
+* **Real-Time Sync:** Integrates a custom `StompClient` (Java 11 `HttpClient` + `WebSocket`) to receive push notifications about new tasks, files, or invites instantly.
+* **Thread Safety:** All network I/O is asynchronous (`CompletableFuture`), with UI updates safely marshaled to the JavaFX Application Thread.
 
-* **Swagger UI:** `http://localhost:8080/swagger-ui/index.html` (Adjust URL based on backend configuration)
+### Tech Stack
 
-**Development Tips:**
-
-* **Request Headers:** All REST calls must use standard headers, including `Content-Type: application/json`, `Accept: application/json`, and crucially, `Authorization: Bearer <token>` for authenticated requests.
-* **DTO Schemas:** The Swagger models define the exact structure of JSON data expected and sent, eliminating the need for a separate ER diagram in this Frontend documentation.
-
-#### WebSocket Endpoints (Real-time Communication)
-
-If implemented, WebSocket endpoints are used for real-time updates (e.g., chat messages, live task status).
-
-* **Connection URI:** Typically `ws://localhost:8080/ws` (refer to backend docs for the exact path).
-* The Frontend service layer handles connection and message routing, often using the STOMP protocol.
+* **Java 21**
+* **JavaFX** (FXML + CSS)
+* **Gson** (JSON Serialization)
+* **ControlsFX** (Notifications & UI components)
 
 -----
 
-### 🖼️ User Interface Flow Examples
+## 🚀 Setup and Execution
 
-The following outlines the basic user workflow. **Screenshots should be placed in `Frontend/docs/images` and linked here.**
+### Prerequisites
 
-| Step | View File | Description |
-| :--- | :--- | :--- |
-| **1. Entry** | `auth_view.fxml` | Landing page, directs user to sign in or register. |
-| **2. Auth** | `sign_in.fxml`/`sign_up.fxml` | Handles user credentials via REST API calls. |
-| **3. Main Hub** | `MainView.fxml` | Primary container with side navigation to key features. |
-| **4. Daily Focus** | `TodayView.fxml` | Overview of tasks scheduled for the current day. |
-| **5. Groups** | `GroupsView.fxml` | List of user's study groups, leads to detail view. |
-| **6. Profile** | `ProfileView.fxml` | Allows editing personal data and application settings. |
+* **Java JDK 21**
+* **Maven 3.9+**
+* **Docker** (Optional, for containerized backend run)
 
-*Example linking a screenshot:*
+### 1\. Running the Backend
 
-```markdown
+You can run the backend locally or via Docker.
+
+```bash
+# Using Maven
+mvn spring-boot:run
+
+# OR using Docker
+docker-compose up --build
+```
+
+*Once started, verify the API is running at `http://localhost:8080`.*
+
+### 2\. Running the Frontend
+
+Open the `Frontend` module in your IDE or run via terminal:
+
+```bash
+cd Frontend
+mvn clean javafx:run
+```
+
+-----
+
+### 📸 Screenshots
+
+```markdown!
 ![Sign In Screen](docs/sign_in.png)
 ![Sign Up Screen](docs/sign_up.png)
 ![Groups Screen](docs/groups.png)
 ![Group detail Screen](docs/group_detail.png)
 ```
-
------
-
-### 🛠️ Development Setup and Launch
-
-#### Prerequisites
-
-* Java Development Kit (JDK) 21 (or the version required by the project)
-* Apache Maven 3.9+
-* The Backend service must be running and accessible (e.g., at `http://localhost:8080`).
-
-#### Launch Options
-
-1.  **From IDE (IntelliJ IDEA):** Open the `Frontend` module and run the main JavaFX application class.
-2.  **Using Maven Plugin:** Execute the following command from the project root directory:
-    ```bash
-    mvn -pl Frontend -am clean javafx:run
-    ```
-
-**Note:** For the application to function correctly, the backend service must be running to handle authentication and data requests.
