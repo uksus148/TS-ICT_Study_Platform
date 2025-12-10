@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import javafx.scene.control.Button?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.synapse.client.controller.NotificationsController"
+      spacing="20" style="-fx-background-color: white; -fx-padding: 20;">
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Button onAction="#onBack" styleClass="btn-icon">
+            <graphic>
+                <FontIcon iconLiteral="bi-arrow-left" iconSize="20"/>
+            </graphic>
+        </Button>
+        <Label text="Notifications" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+    </HBox>
+
+    <ListView fx:id="requestsListView" VBox.vgrow="ALWAYS" styleClass="custom-list-view"/>
+
+    <Label fx:id="emptyLabel" text="No new notifications"
+           style="-fx-text-fill: gray; -fx-font-size: 14px;" visible="false"/>
+
+</VBox>

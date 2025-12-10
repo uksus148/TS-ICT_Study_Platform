@@ -5,6 +5,8 @@ import com.synapse.client.model.Group;
 import com.synapse.client.service.AlertService;
 import com.synapse.client.service.ApiService;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.IntegerBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -41,6 +43,10 @@ public class GroupsStore {
                     AlertService.showError("Connection Error", "Failed to load groups.");
                     return null;
                 });
+    }
+
+    public IntegerBinding getGroupsCountProperty() {
+        return Bindings.size(groups);
     }
 
     public void addGroup(Group group) {

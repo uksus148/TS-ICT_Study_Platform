@@ -1,7 +1,7 @@
 package com.synapse.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import com.synapse.client.MembershipRole;
+import com.synapse.client.enums.MembershipRole;
 
 public class User {
     @SerializedName(value = "user_id", alternate = {"id", "userId"})

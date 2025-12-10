@@ -1,7 +1,6 @@
 package com.synapse.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import java.time.LocalDateTime;
 
 public class Group {
     @SerializedName(value = "groupId", alternate = {"id", "group_id"})
@@ -10,8 +9,10 @@ public class Group {
     private String name;
     @SerializedName(value = "description")
     private String description;
-    @SerializedName(value = "created_by")
+    @SerializedName(value = "created_by", alternate = {"createdBy"})
     private Long created_by;
+    @SerializedName(value = "groupOwner")
+    private String groupOwner;
     public Group() {
     }
     public Group(Long group_id, String name, String description, Long created_by) {
@@ -40,6 +41,9 @@ public class Group {
     }
     public void setCreated_by(Long created_by) {
         this.created_by = created_by;
+    }
+    public String getGroupOwner() {
+        return groupOwner;
     }
     @Override
     public String toString() {

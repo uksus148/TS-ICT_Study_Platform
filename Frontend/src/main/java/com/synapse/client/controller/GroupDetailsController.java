@@ -1,15 +1,19 @@
 package com.synapse.client.controller;
 
-import com.synapse.client.MembershipRole;
-import com.synapse.client.TaskStatus;
+import com.synapse.client.enums.MembershipRole;
+import com.synapse.client.enums.TaskStatus;
 import com.synapse.client.UserSession;
 import com.synapse.client.model.Group;
 import com.synapse.client.model.Resource;
 import com.synapse.client.model.Task;
 import com.synapse.client.model.User;
+import com.synapse.client.service.AlertService;
+import com.synapse.client.service.ApiService;
+import com.synapse.client.service.StompClient;
 import com.synapse.client.store.MembersStore;
 import com.synapse.client.store.ResourceStore;
 import com.synapse.client.store.TaskStore;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -56,11 +60,26 @@ public class GroupDetailsController {
         if (group != null) {
             groupNameLabel.setText(group.getName());
             loadData();
+            subscribeToGroupUpdates(group.getGroup_id());
         }
 
         setupTaskListView();
         setupResourceListView();
         setupMembersListView();
+    }
+
+    private void subscribeToGroupUpdates(Long groupId) {
+        String topic = "/topic/group/" + groupId;
+
+        StompClient.getInstance().subscribe(topic, message -> {
+            System.out.println("DEBUG: WebSocket Notification: " + message);
+
+            Platform.runLater(() -> {
+                TaskStore.getInstance().fetchTasksByGroupId(groupId);
+                ResourceStore.getInstance().fetchResourcesForGroup(groupId);
+                MembersStore.getInstance().fetchMembersForGroup(groupId);
+            });
+        });
     }
 
     private void loadData() {
@@ -244,12 +263,14 @@ public class GroupDetailsController {
                     HBox.setHgrow(spacer, Priority.ALWAYS);
 
                     row.getChildren().addAll(infoBox, spacer);
-                    Long currentLoggedInUser = UserSession.getInstance().getUserId();
+                    Long currentLoggedInUserId = UserSession.getInstance().getUserId();
 
-                    boolean amIAdmin = user.getRole().equals(MembershipRole.OWNER);
-                    boolean isTargetSelf = user.getUser_id().equals(currentLoggedInUser);
+                    boolean amIOwner = currentGroup.getCreated_by() != null
+                            && currentGroup.getCreated_by().equals(currentLoggedInUserId);
+                    System.out.print(currentGroup.getCreated_by());
+                    boolean isTargetSelf = user.getUser_id().equals(currentLoggedInUserId);
 
-                    if (amIAdmin && !isTargetSelf) {
+                    if (amIOwner && !isTargetSelf) {
                         Button kickButton = new Button();
                         kickButton.setGraphic(new FontIcon("bi-person-dash-fill"));
                         kickButton.setStyle("-fx-background-color: #ffebee; -fx-text-fill: #dc3545;");
@@ -315,7 +336,31 @@ public class GroupDetailsController {
 
     @FXML
     public void onInviteMember() {
-        System.out.println("Open Invite Dialog");
+        if (currentGroup == null) return;
+
+        ApiService.getInstance().createInvitation(currentGroup.getGroup_id())
+                .thenAccept(response -> {
+                    Platform.runLater(() -> {
+                        if (response != null && response.token() != null) {
+                            showInviteDialog(response.token());
+                        } else {
+                            AlertService.showError("Error", "Failed to generate invitation.");
+                        }
+                    });
+                })
+                .exceptionally(e -> {
+                    Platform.runLater(() -> AlertService.showError("Error", "Connection error: " + e.getMessage()));
+                    return null;
+                });
+    }
+
+    private void showInviteDialog(String token) {
+        TextInputDialog dialog = new TextInputDialog(token); // Токен уже внутри поля
+        dialog.setTitle("Invitation Code");
+        dialog.setHeaderText("Share this code with others to join:");
+        dialog.setContentText("Code:");
+        dialog.setGraphic(null); // Убираем иконку вопроса
+        dialog.showAndWait();
     }
 
     @FXML

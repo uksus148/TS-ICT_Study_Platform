@@ -6,7 +6,7 @@ public class Resource {
     @SerializedName(value = "resource_id", alternate = {"id"})
     private Long resource_id;
 
-    @SerializedName(value = "name", alternate = {"title", "resourceName"})
+    @SerializedName(value = "title", alternate = {"name", "resourceName"})
     private String name;
 
     @SerializedName(value = "type", alternate = {"resourceType"})

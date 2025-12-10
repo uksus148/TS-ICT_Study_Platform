@@ -1,7 +1,7 @@
 package com.synapse.client.controller;
 
 import com.synapse.client.model.Task;
-import com.synapse.client.TaskStatus;
+import com.synapse.client.enums.TaskStatus;
 import com.synapse.client.store.TaskStore;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
