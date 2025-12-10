@@ -11,7 +11,19 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 
+/**
+ * Controller responsible for the Task Editor side panel.
+ * <p>
+ * This controller handles the lifecycle of a Task entity:
+ * <ul>
+ * <li><b>Creation:</b> Inputting details for a new task.</li>
+ * <li><b>Editing:</b> Modifying an existing task's status, deadline, or description.</li>
+ * <li><b>Deletion:</b> Removing a task permanently.</li>
+ * </ul>
+ * It dynamically adjusts the UI buttons (Save/Delete vs Create/Cancel) based on the context.
+ */
 public class TaskEditorController {
+
     private Task task;
 
     @FXML public DatePicker taskDeadline;
@@ -22,23 +34,42 @@ public class TaskEditorController {
     @FXML public ChoiceBox<TaskStatus> taskStatus;
     @FXML public ChoiceBox<Group> taskGroup;
 
+    // Buttons for Edit Mode
     @FXML public Button taskSave;
-    @FXML public Button taskCancel;
     @FXML public Button taskDelete;
+
+    // Buttons for Create Mode
+    @FXML public Button taskCancel;
     @FXML public Button taskCreate;
 
+    /**
+     * Initializes the controller.
+     * Populates the Status dropdown with enum values and the Group dropdown
+     * with the list of available groups from the store.
+     */
     @FXML
     public void initialize(){
         taskStatus.getItems().addAll(TaskStatus.values());
         taskGroup.setItems(GroupsStore.getInstance().getGroups());
+
+        // Default value
         taskStatus.setValue(TaskStatus.IN_PROGRESS);
     }
 
+    /**
+     * Loads a task into the editor.
+     * Determines whether to enter "Edit Mode" or "Create Mode" based on the task's ID.
+     *
+     * @param task The task object to edit, or a partial object for a new task.
+     */
     public void loadTask(Task task) {
+        // Check if the task already exists in the database
         boolean isEditing = (task != null && task.getTask_id() != null && task.getTask_id() > 0L);
 
         if (isEditing) {
             this.task = task;
+
+            // Populate fields
             taskTitle.setText(task.getTitle());
             taskDescription.setText(task.getDescription());
             taskStatus.setValue(task.getStatus());
@@ -53,6 +84,7 @@ public class TaskEditorController {
             setupButtons(true);
 
         } else {
+            // Setup for new task
             this.task = task;
 
             taskTitle.clear();
@@ -60,6 +92,7 @@ public class TaskEditorController {
             taskStatus.setValue(TaskStatus.IN_PROGRESS);
             taskDeadline.setValue(null);
 
+            // If a group ID was pre-provided (e.g. "Add Task" clicked from a specific group)
             if (this.task != null && this.task.getGroup_id() != null) {
                 selectGroupInChoiceBox(this.task.getGroup_id());
             } else {
@@ -70,12 +103,20 @@ public class TaskEditorController {
         }
     }
 
+    /**
+     * Overloaded method to start creating a task for a specific group ID.
+     *
+     * @param groupId The ID of the group where the task will be created.
+     */
     public void loadTask(Long groupId) {
         Task newTaskWithGroup = new Task();
         newTaskWithGroup.setGroup_id(groupId);
         loadTask(newTaskWithGroup);
     }
 
+    /**
+     * Helper to visually select the correct group in the ChoiceBox based on ID.
+     */
     private void selectGroupInChoiceBox(Long groupId) {
         if (groupId == null) return;
         for (Group group : taskGroup.getItems()) {
@@ -86,10 +127,14 @@ public class TaskEditorController {
         }
     }
 
+    /**
+     * Synchronizes the local Task model with the values entered in the UI fields.
+     */
     private void updateTaskFromFields() {
         this.task.setTitle(taskTitle.getText());
         this.task.setDescription(taskDescription.getText());
         this.task.setStatus(taskStatus.getValue());
+
         if (taskDeadline.getValue() != null) {
             this.task.setDeadline(taskDeadline.getValue().atStartOfDay());
         } else {
@@ -102,6 +147,10 @@ public class TaskEditorController {
         }
     }
 
+    /**
+     * Validates the form input.
+     * Ensures Title is not empty and a Group is selected.
+     */
     private boolean isFormValid() {
         if (taskTitle.getText().isEmpty()) {
             AlertService.showError("Validation Error", "Title cannot be empty");
@@ -114,6 +163,11 @@ public class TaskEditorController {
         return true;
     }
 
+    /**
+     * Toggles the visibility of buttons based on the mode.
+     *
+     * @param isEditing true for Edit Mode (Save/Delete), false for Create Mode (Create/Cancel).
+     */
     public void setupButtons(boolean isEditing) {
         taskDelete.setVisible(isEditing);
         taskDelete.setManaged(isEditing);
@@ -125,6 +179,10 @@ public class TaskEditorController {
         taskCreate.setVisible(!isEditing);
         taskCreate.setManaged(!isEditing);
     }
+
+    // ==========================================
+    // USER ACTIONS
+    // ==========================================
 
     @FXML
     public void onDeleteTask() {
@@ -144,6 +202,7 @@ public class TaskEditorController {
 
         updateTaskFromFields();
 
+        // Assign current user as creator
         Long currentUserId = UserSession.getInstance().getUserId();
         this.task.setCreated_by(currentUserId != null ? currentUserId : 1L);
 

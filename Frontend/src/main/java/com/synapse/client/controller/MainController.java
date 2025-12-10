@@ -28,27 +28,41 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * The Root Controller of the application's main interface.
+ * <p>
+ * This class serves as the central hub for the application after a successful login.
+ * It is responsible for:
+ * <ul>
+ * <li><b>Layout Management:</b> Swapping views in the center area (Navigation) and managing side panels (Editors).</li>
+ * <li><b>Global Event Handling:</b> Subscribing to WebSocket topics for all user groups.</li>
+ * <li><b>Notification System:</b> Displaying toast notifications for real-time updates.</li>
+ * <li><b>Session Management:</b> Handling logout and data refresh.</li>
+ * </ul>
+ */
 public class MainController {
-    private final Set<Long> subscribedGroupIds = new HashSet<>();
-    private MainController mainController;
-    @FXML
-    private BorderPane mainBorderPane;
-    @FXML
-    private SidebarController sidebarController;
-    @FXML
-    private TaskEditorController taskEditorController;
-    @FXML
-    private GroupEditorController groupEditorController;
-    @FXML
-    private Parent taskEditor;
-    @FXML
-    private Parent groupEditor;
-    @FXML
-    private TodayController todayViewController;
 
+    // Tracks which groups we are already listening to via WebSocket to avoid duplicate subscriptions.
+    private final Set<Long> subscribedGroupIds = new HashSet<>();
+
+    @FXML private BorderPane mainBorderPane;
+
+    // Sub-controllers
+    @FXML private SidebarController sidebarController;
+    @FXML private TaskEditorController taskEditorController;
+    @FXML private GroupEditorController groupEditorController;
+    @FXML private TodayController todayViewController;
+
+    // Cached Parent views for performance
+    @FXML private Parent taskEditor;
+    @FXML private Parent groupEditor;
     private Parent resourceEditor;
     private ResourceEditorController resourceEditorController;
 
+    /**
+     * Initializes the controller. Called automatically by JavaFX.
+     * Hides the editor panels initially and links sub-controllers to this MainController.
+     */
     @FXML
     public void initialize() {
         if (taskEditor != null) {
@@ -56,15 +70,23 @@ public class MainController {
             taskEditor.setManaged(false);
         }
 
+        // Dependency Injection: Pass reference of 'this' to sub-controllers
         if (todayViewController != null) {
             todayViewController.setMainController(this);
         }
         if (sidebarController != null) {
             sidebarController.setMainController(this);
-        } else {
         }
     }
 
+    /**
+     * Entry point called immediately after the user logs in.
+     * <p>
+     * 1. Sets up global WebSocket listeners for all groups.
+     * 2. Subscribes to personal user alerts.
+     * 3. Fetches initial data from the server.
+     * 4. Navigates to the default view (Groups).
+     */
     public void onSuccessfulLogin() {
         setupGlobalGroupSubscriptions();
         subscribeToPersonalUpdates();
@@ -72,11 +94,18 @@ public class MainController {
         showGroupsView();
     }
 
+    /**
+     * Triggers a fresh fetch of Groups and Tasks from the backend API.
+     * Updates the local Stores, which automatically updates the UI via bindings.
+     */
     public void refreshAllData() {
         GroupsStore.getInstance().fetchGroupsFromServer();
         TaskStore.getInstance().fetchTasksFromServer();
     }
 
+    // ==========================================
+    // NAVIGATION METHODS (Center View)
+    // ==========================================
 
     public void showGroupsView() {
         loadView("groups/GroupsView.fxml");
@@ -93,6 +122,13 @@ public class MainController {
         loadView("ProfileView.fxml");
     }
 
+    /**
+     * Dynamically loads an FXML file and sets it as the center content of the BorderPane.
+     * Also injects the MainController instance into the new view's controller.
+     *
+     * @param fxmlFileName The relative path to the FXML file within 'views/'.
+     * @return The controller of the loaded view, or null if loading failed.
+     */
     public Object loadView(String fxmlFileName) {
         try {
             String fxmlPath = "/com/synapse/client/views/" + fxmlFileName;
@@ -104,6 +140,7 @@ public class MainController {
 
             Object controller = loader.getController();
 
+            // Inject MainController into the newly loaded controller
             if (controller instanceof TodayController) ((TodayController) controller).setMainController(this);
             if (controller instanceof UpcomingController) ((UpcomingController) controller).setMainController(this);
             if (controller instanceof GroupsController) ((GroupsController) controller).setMainController(this);
@@ -122,6 +159,10 @@ public class MainController {
             return null;
         }
     }
+
+    // ==========================================
+    // EDITOR PANELS (Right View)
+    // ==========================================
 
     public void requestEditTaskEditor(Task task) {
         restoreTaskEditorPosition();
@@ -147,6 +188,10 @@ public class MainController {
         showRightPanel(taskEditor);
     }
 
+    /**
+     * Loads or displays the Group Editor panel.
+     * Used for creating new groups or editing existing ones.
+     */
     public void requestOpenNewGroupEditor() {
         try {
             if (groupEditor == null) {
@@ -200,6 +245,16 @@ public class MainController {
         }
     }
 
+    // ==========================================
+    // AUTH & SYSTEM
+    // ==========================================
+
+    /**
+     * Logs the user out.
+     * 1. Sends logout request to API.
+     * 2. Clears local session and stores.
+     * 3. Redirects to the Auth View.
+     */
     public void logout() {
         ApiService.getInstance().logout().whenComplete((result, error) -> Platform.runLater(this::performLocalLogout));
     }
@@ -229,7 +284,7 @@ public class MainController {
             } else {
                 System.err.println("style.css not found");
             }
-            stage.setTitle("Synapse"); // Application name
+            stage.setTitle("Synapse");
             stage.setScene(scene);
             stage.show();
 
@@ -261,6 +316,11 @@ public class MainController {
     public void onNotificationsClick() {
         showNotificationsView();
     }
+
+    /**
+     * Helper to retrieve the current JavaFX Stage.
+     * Used for positioning notifications or dialogs.
+     */
     public Stage getStage() {
         if (mainBorderPane != null && mainBorderPane.getScene() != null) {
             return (Stage) mainBorderPane.getScene().getWindow();
@@ -268,8 +328,19 @@ public class MainController {
         return null;
     }
 
+    // ==========================================
+    // REAL-TIME UPDATES (WebSocket)
+    // ==========================================
+
+    /**
+     * Initializes global subscriptions for all groups the user is a member of.
+     * Uses a Listener on the GroupsStore to automatically subscribe to any new groups
+     * that are loaded or added later.
+     */
     private void setupGlobalGroupSubscriptions() {
         ObservableList<Group> groups = GroupsStore.getInstance().getGroups();
+
+        // Listener for future groups (dynamically added)
         groups.addListener((ListChangeListener<Group>) change -> {
             while (change.next()) {
                 if (change.wasAdded()) {
@@ -280,18 +351,28 @@ public class MainController {
             }
         });
 
+        // Subscribe to existing groups immediately
         for (Group group : groups) {
             subscribeToGroupTopic(group.getGroup_id());
         }
     }
 
+    /**
+     * Subscribes to a specific group's WebSocket topic.
+     * Routes incoming messages (Tasks, Resources, Members) to the appropriate Store
+     * and triggers a popup notification.
+     *
+     * @param groupId The ID of the group to listen to.
+     */
     private void subscribeToGroupTopic(Long groupId) {
         if (subscribedGroupIds.contains(groupId)) {
-            return;
+            return; // Avoid duplicate subscriptions
         }
         String topic = "/topic/group/" + groupId;
+
         StompClient.getInstance().subscribe(topic, message -> {
             Platform.runLater(() -> {
+                // Determine the type of update based on the message content
                 if (message.contains("New task created")) {
                     TaskStore.getInstance().fetchTasksByGroupId(groupId);
                     showPopupNotification("Tasks Created", message);
@@ -327,6 +408,10 @@ public class MainController {
         subscribedGroupIds.add(groupId);
     }
 
+    /**
+     * Displays a non-blocking toast notification in the bottom-right corner.
+     * Uses the ControlsFX library.
+     */
     private void showPopupNotification(String title, String message) {
         Platform.runLater(() -> {
             try {
@@ -335,16 +420,22 @@ public class MainController {
                         .text(message)
                         .hideAfter(Duration.seconds(5))
                         .position(Pos.BOTTOM_RIGHT);
-                if (mainController != null && mainController.getStage() != null) {
-                    notification.owner(mainController.getStage());
+
+                // Attach to main stage if available
+                if (this.getStage() != null) {
+                    notification.owner(this.getStage());
                 }
                 notification.showInformation();
             } catch (Exception e) {
-                System.err.println(e.getMessage());
+                System.err.println("Notification failed: " + e.getMessage());
             }
         });
     }
 
+    /**
+     * Subscribes to a personal user queue.
+     * Used for events specific to the user, such as being kicked from a group.
+     */
     private void subscribeToPersonalUpdates() {
         Long userId = UserSession.getInstance().getUserId();
         if (userId == null) return;
@@ -354,7 +445,7 @@ public class MainController {
         StompClient.getInstance().subscribe(topic, message -> {
             Platform.runLater(() -> {
                 if (message.contains("You have been removed from group")) {
-                    RequestStore.getInstance().fetchRequests();
+                    RequestStore.getInstance().fetchRequests(); // Refresh requests or groups
                     showPopupNotification("Remove from group", "You have been removed from group.");
                 }
             });

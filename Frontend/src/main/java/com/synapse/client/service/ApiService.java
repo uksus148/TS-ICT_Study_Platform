@@ -13,6 +13,20 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Centralized service for handling all HTTP REST API communication.
+ * <p>
+ * This class implements the <b>Singleton</b> pattern to ensure a single instance manages
+ * the {@link HttpClient}, connection pooling, and session state (Cookies).
+ * <p>
+ * Key features:
+ * <ul>
+ * <li><b>Asynchronous I/O:</b> All public methods return {@link CompletableFuture}, ensuring
+ * that network requests do not block the JavaFX Application Thread.</li>
+ * <li><b>JSON Serialization:</b> Uses {@link Gson} with custom adapters for Java 8 Time API.</li>
+ * <li><b>Session Management:</b> Automatically extracts and attaches 'JSESSIONID' cookies.</li>
+ * </ul>
+ */
 public class ApiService {
     private static ApiService instance;
     private final HttpClient client;
@@ -21,6 +35,13 @@ public class ApiService {
 
     private static final String BASE_URL = "http://localhost:8080";
 
+    /**
+     * Private constructor to enforce Singleton pattern.
+     * <p>
+     * Initializes the {@link HttpClient} and configures a {@link Gson} instance
+     * with custom TypeAdapters to correctly serialize and deserialize
+     * {@link LocalDate} and {@link LocalDateTime} objects to/from JSON strings.
+     */
     private ApiService() {
         this.client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
@@ -49,11 +70,20 @@ public class ApiService {
                 .create();
     }
 
+    /**
+     * Returns the global singleton instance of the ApiService.
+     *
+     * @return The active ApiService instance.
+     */
     public static synchronized ApiService getInstance() {
         if (instance == null) instance = new ApiService();
         return instance;
     }
 
+    /**
+     * Extracts the 'Set-Cookie' header from the HTTP response and stores it
+     * for subsequent requests to maintain the user's session.
+     */
     private void extractCookie(HttpResponse<?> response) {
         Optional<String> cookieHeader = response.headers().firstValue("Set-Cookie");
         if (cookieHeader.isEmpty()) {
@@ -63,6 +93,12 @@ public class ApiService {
         cookieHeader.ifPresent(rawCookie -> this.currentSessionId = rawCookie.split(";")[0]);
     }
 
+    /**
+     * Helper method to create a new HTTP Request Builder with the session cookie attached.
+     *
+     * @param path The API endpoint path (e.g., "/api/tasks").
+     * @return A configured HttpRequest.Builder.
+     */
     private HttpRequest.Builder newRequestBuilder(String path) {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + path));
@@ -73,18 +109,39 @@ public class ApiService {
         return builder;
     }
 
-    // --- AUTHENTICATION ---
+    // ==========================================
+    // AUTHENTICATION
+    // ==========================================
 
+    /**
+     * Authenticates a user with email and password.
+     *
+     * @param email    User's email.
+     * @param password User's password.
+     * @return A Future containing the authenticated {@link User} object, or null if failed.
+     */
     public CompletableFuture<User> loginUser(String email, String password) {
         LoginRequest requestDto = new LoginRequest(email, password);
         return sendAuthRequest("/auth/login", requestDto);
     }
 
+    /**
+     * Registers a new user account.
+     *
+     * @param username Display name.
+     * @param email    Unique email address.
+     * @param password Account password.
+     * @return A Future containing the newly created {@link User} object.
+     */
     public CompletableFuture<User> registerUser(String username, String email, String password) {
         RegisterRequest requestDto = new RegisterRequest(username, email, password);
         return sendAuthRequest("/auth/register", requestDto);
     }
 
+    /**
+     * Internal helper for sending Login/Register requests.
+     * Handles JSON serialization and Cookie extraction upon success.
+     */
     private CompletableFuture<User> sendAuthRequest(String endpoint, Object dto) {
         String json = gson.toJson(dto);
         HttpRequest request = HttpRequest.newBuilder()
@@ -104,6 +161,10 @@ public class ApiService {
                 });
     }
 
+    /**
+     * Logs out the current user by invalidating the session on the server
+     * and clearing the local session ID.
+     */
     public CompletableFuture<Void> logout() {
         HttpRequest request = newRequestBuilder("/auth/logout")
                 .POST(HttpRequest.BodyPublishers.noBody())
@@ -112,8 +173,15 @@ public class ApiService {
                 .thenAccept(r -> this.currentSessionId = null);
     }
 
-    // --- GROUPS ---
+    // ==========================================
+    // GROUPS MANAGEMENT
+    // ==========================================
 
+    /**
+     * Fetches all study groups the current user belongs to.
+     *
+     * @return A Future containing an array of {@link Group} objects.
+     */
     public CompletableFuture<Group[]> getAllGroups() {
         HttpRequest request = newRequestBuilder("/api/studyGroups/my-groups")
                 .GET()
@@ -154,8 +222,13 @@ public class ApiService {
                 });
     }
 
-    // --- TASKS ---
+    // ==========================================
+    // TASKS MANAGEMENT
+    // ==========================================
 
+    /**
+     * Fetches all tasks associated with the user across all groups.
+     */
     public CompletableFuture<Task[]> getAllTasks() {
         HttpRequest request = newRequestBuilder("/api/tasks")
                 .GET()
@@ -197,8 +270,13 @@ public class ApiService {
                 });
     }
 
-    // --- RESOURCES ---
+    // ==========================================
+    // RESOURCES & MEMBERS
+    // ==========================================
 
+    /**
+     * Creates a new resource (File or Link) within a specific group.
+     */
     public CompletableFuture<Resource> createResource(Resource resource) {
         Long groupId = resource.getGroup_id();
 
@@ -219,6 +297,9 @@ public class ApiService {
         return sendRequest(request, Resource[].class);
     }
 
+    /**
+     * Fetches the list of members for a specific group.
+     */
     public CompletableFuture<User[]> getGroupMembers(Long groupId) {
         HttpRequest request = newRequestBuilder("/api/studyGroups/" + groupId + "/members")
                 .GET()
@@ -238,6 +319,9 @@ public class ApiService {
                 });
     }
 
+    /**
+     * Removes a member from a group (Kick functionality).
+     */
     public CompletableFuture<Void> removeMember(Long groupId, Long userId) {
         String path = "/api/studyGroups/" + groupId + "/members/" + userId;
 
@@ -253,8 +337,13 @@ public class ApiService {
                 });
     }
 
-    // --- INVITATIONS (NEW) ---
+    // ==========================================
+    // INVITATIONS (TOKEN SYSTEM)
+    // ==========================================
 
+    /**
+     * Requests the backend to generate a new unique invitation token for a group.
+     */
     public CompletableFuture<InviteCreateResponseDTO> createInvitation(Long groupId) {
         HttpRequest request = newRequestBuilder("/api/invitations/" + groupId)
                 .POST(HttpRequest.BodyPublishers.noBody())
@@ -263,6 +352,9 @@ public class ApiService {
         return sendRequest(request, InviteCreateResponseDTO.class);
     }
 
+    /**
+     * Attempts to join a group using an invitation token.
+     */
     public CompletableFuture<InviteAcceptDTO> acceptInvitation(String token) {
         HttpRequest request = newRequestBuilder("/api/invitations/accept/" + token)
                 .POST(HttpRequest.BodyPublishers.noBody())
@@ -271,6 +363,9 @@ public class ApiService {
         return sendRequest(request, InviteAcceptDTO.class);
     }
 
+    /**
+     * Validates a token without joining, useful for showing a preview of the group.
+     */
     public CompletableFuture<InviteValidateDTO> validateInvitation(String token) {
         HttpRequest request = newRequestBuilder("/api/invitations/validate/" + token)
                 .GET()
@@ -278,8 +373,14 @@ public class ApiService {
         return sendRequest(request, InviteValidateDTO.class);
     }
 
-    // --- GROUP REQUESTS (OLD LOGIC - KEEP IF NEEDED) ---
+    // ==========================================
+    // MISC / LEGACY
+    // ==========================================
 
+    /**
+     * Retrieves pending group requests (Legacy implementation).
+     * Currently returns an empty list to prevent 404 errors if backend support is missing.
+     */
     public CompletableFuture<GroupRequest[]> getMyRequests() {
         return CompletableFuture.completedFuture(new GroupRequest[0]);
     }
@@ -298,6 +399,9 @@ public class ApiService {
                 });
     }
 
+    /**
+     * Updates user profile information.
+     */
     public CompletableFuture<User> updateUser(User user) {
         String json = gson.toJson(user);
 
@@ -309,8 +413,18 @@ public class ApiService {
         return sendRequest(request, User.class);
     }
 
-    // --- HELPER METHODS ---
+    // ==========================================
+    // HELPER METHODS
+    // ==========================================
 
+    /**
+     * Generic helper method to send an async HTTP request and deserialize the JSON response.
+     *
+     * @param request      The prepared HttpRequest.
+     * @param responseType The Class of the expected response object.
+     * @param <T>          The type of the response object.
+     * @return A Future containing the deserialized object, or null on error.
+     */
     private <T> CompletableFuture<T> sendRequest(HttpRequest request, Class<T> responseType) {
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {

@@ -38,6 +38,17 @@ import java.time.format.DateTimeFormatter;
 import static org.kordamp.ikonli.bootstrapicons.BootstrapIcons.CALENDAR2_X_FILL;
 import static org.kordamp.ikonli.bootstrapicons.BootstrapIcons.CHEVRON_RIGHT;
 
+/**
+ * Controller class responsible for the Group Details View.
+ * <p>
+ * This controller acts as the central hub for a specific Study Group. It manages:
+ * <ul>
+ * <li>Displaying the list of Tasks, Resources, and Members.</li>
+ * <li>Visualizing task progress via a PieChart.</li>
+ * <li>Handling user actions such as creating tasks, uploading files, and inviting members.</li>
+ * <li> enforcing permissions (e.g., only the owner can kick members).</li>
+ * </ul>
+ */
 public class GroupDetailsController {
 
     private MainController mainController;
@@ -49,10 +60,23 @@ public class GroupDetailsController {
     @FXML private ListView<User> membersListView;
     @FXML private PieChart tasksPieChart;
 
+    /**
+     * Injects the MainController to allow navigation back to other views
+     * or to request opening side panels (Task Editor, Resource Editor).
+     *
+     * @param mainController The primary application controller.
+     */
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
     }
 
+    /**
+     * Initializes the view with data for a specific group.
+     * This is the entry point when opening a group. It triggers data fetching
+     * from the Stores and configures the UI components.
+     *
+     * @param group The group entity to display.
+     */
     public void setGroup(Group group) {
         this.currentGroup = group;
         if (group != null) {
@@ -65,24 +89,43 @@ public class GroupDetailsController {
         setupMembersListView();
     }
 
+    /**
+     * Fetches data from the Stores (TaskStore, MembersStore, ResourceStore)
+     * and binds the ObservableLists to the UI ListViews.
+     * <p>
+     * Also sets up a listener on the Task list to automatically update
+     * the PieChart whenever tasks change (added, removed, or status updated).
+     */
     private void loadData() {
         if (currentGroup == null || currentGroup.getGroup_id() == null) return;
         Long groupId = currentGroup.getGroup_id();
 
+        // Load Tasks
         ObservableList<Task> tasks = TaskStore.getInstance().getTasksByGroupId(groupId);
         tasksListView.setItems(tasks);
+        // Add listener to update chart dynamically
         tasks.addListener((ListChangeListener<Task>) change -> updateChart(tasks));
         updateChart(tasks);
 
+        // Load Members
         MembersStore.getInstance().fetchMembersForGroup(groupId);
         ObservableList<User> members = MembersStore.getInstance().getMembersByGroupId(groupId);
         membersListView.setItems(members);
 
+        // Load Resources
         ResourceStore.getInstance().fetchResourcesForGroup(groupId);
         ObservableList<Resource> resources = ResourceStore.getInstance().getResourcesByGroupId(groupId);
         resourcesListView.setItems(resources);
     }
 
+    // ==========================================
+    // UI SETUP & CELL FACTORIES
+    // ==========================================
+
+    /**
+     * Configures the visual representation of Tasks in the ListView.
+     * Defines a custom CellFactory to show checkboxes, titles, deadlines, and styling.
+     */
     private void setupTaskListView() {
         tasksListView.setCellFactory(param -> new ListCell<>() {
             private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yy");
@@ -141,6 +184,10 @@ public class GroupDetailsController {
         });
     }
 
+    /**
+     * Configures the visual representation of Resources (Files/Links).
+     * Adds buttons for "Open Link" or "Download File" based on resource type.
+     */
     private void setupResourceListView() {
         resourcesListView.setCellFactory(param -> new ListCell<>() {
             @Override
@@ -190,6 +237,9 @@ public class GroupDetailsController {
         });
     }
 
+    /**
+     * Helper to open a URL in the system's default browser.
+     */
     private void openLink(String url) {
         try {
             if (Desktop.isDesktopSupported()) {
@@ -200,6 +250,10 @@ public class GroupDetailsController {
         }
     }
 
+    /**
+     * Helper to copy a file from the stored path to a user-selected location.
+     * Opens a FileChooser dialog.
+     */
     private void downloadFile(Resource resource) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Resource");
@@ -221,6 +275,11 @@ public class GroupDetailsController {
         }
     }
 
+    /**
+     * Configures the Member list.
+     * Includes logic to show a "Kick" button only if the current user is the owner
+     * of the group, and they are not trying to kick themselves.
+     */
     private void setupMembersListView() {
         membersListView.setCellFactory(param -> new ListCell<>() {
             @Override
@@ -252,6 +311,7 @@ public class GroupDetailsController {
 
                     boolean isTargetSelf = user.getUser_id().equals(currentLoggedInUserId);
 
+                    // Show Kick button ONLY if I am owner AND target is not me
                     if (amIOwner && !isTargetSelf) {
                         Button kickButton = new Button();
                         kickButton.setGraphic(new FontIcon("bi-person-dash-fill"));
@@ -267,6 +327,9 @@ public class GroupDetailsController {
         });
     }
 
+    /**
+     * Shows a confirmation dialog and triggers the removal of a member via MembersStore.
+     */
     private void kickUser(User user) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Kick Member");
@@ -278,6 +341,12 @@ public class GroupDetailsController {
         }
     }
 
+    /**
+     * Calculates task statistics (Completed vs In Progress vs Canceled)
+     * and updates the PieChart data.
+     *
+     * @param tasks The list of tasks to analyze.
+     */
     private void updateChart(ObservableList<Task> tasks) {
         int canceledCount = 0;
         int inProgressCount = 0;
@@ -302,6 +371,10 @@ public class GroupDetailsController {
         tasksPieChart.setLegendVisible(false);
     }
 
+    // ==========================================
+    // USER ACTIONS (@FXML)
+    // ==========================================
+
     @FXML
     public void onBack() {
         if (mainController != null) {
@@ -316,6 +389,9 @@ public class GroupDetailsController {
         }
     }
 
+    /**
+     * Calls the API to generate an invitation token, then displays it in a dialog.
+     */
     @FXML
     public void onInviteMember() {
         if (currentGroup == null) return;

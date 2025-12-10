@@ -23,30 +23,68 @@ import java.time.format.DateTimeFormatter;
 import static org.kordamp.ikonli.bootstrapicons.BootstrapIcons.CALENDAR2_X_FILL;
 import static org.kordamp.ikonli.bootstrapicons.BootstrapIcons.CHEVRON_RIGHT;
 
+/**
+ * Controller class responsible for the "Upcoming" view.
+ * <p>
+ * This view displays tasks that are scheduled for future dates (tomorrow and beyond).
+ * It helps users plan ahead by providing:
+ * <ul>
+ * <li>A filtered list of future tasks from the {@link TaskStore}.</li>
+ * <li>A real-time counter of upcoming deadlines.</li>
+ * <li>Functionality to add new tasks or edit existing ones.</li>
+ * </ul>
+ */
 public class UpcomingController {
+
     public MainController mainController;
+
     @FXML
     private Label labelCount;
+
     @FXML
     private ListView<Task> taskListView;
 
+    /**
+     * Injects the MainController to allow navigation and opening side panels.
+     *
+     * @param mainController The primary application controller.
+     */
     @FXML
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
     }
+
+    /**
+     * Initializes the controller.
+     * <p>
+     * 1. Binds the count label to the {@link TaskStore} property for automatic updates.
+     * 2. Retrieves the list of upcoming tasks.
+     * 3. Configures the ListView cell factory.
+     */
     @FXML
     public void initialize() {
+        // Reactive binding: label updates automatically when store changes
         labelCount.textProperty().bind(
                 TaskStore.getInstance().getUpcomingTaskCountProperty().asString()
         );
+
         TaskStore taskStore = TaskStore.getInstance();
         ObservableList<Task> upcomingTasks = taskStore.getUpcomingTasks();
         taskListView.setItems(upcomingTasks);
+
         setupTaskListView();
     }
 
+    /**
+     * Configures the visual appearance of the task list items.
+     * Defines a custom {@link ListCell} that renders:
+     * <ul>
+     * <li>Checkbox for status.</li>
+     * <li>Task Title.</li>
+     * <li>Formatted Deadline (dd-MM-yy) with a calendar icon.</li>
+     * </ul>
+     */
     private void setupTaskListView() {
-
         taskListView.setCellFactory(param -> new ListCell<Task>() {
 
             private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yy");
@@ -59,33 +97,42 @@ public class UpcomingController {
                     setText(null);
                     setGraphic(null);
                 } else {
+                    // Row Layout
                     HBox rowLayout = new HBox(10);
                     rowLayout.setAlignment(Pos.TOP_LEFT);
                     rowLayout.setPadding(new Insets(2, 10, 2, 10));
 
+                    // Checkbox
                     CheckBox checkBox = new CheckBox();
                     checkBox.setSelected(task.getStatus() == TaskStatus.COMPLETED);
                     checkBox.getStyleClass().add("list-checkbox");
-                    // TODO: Add listener to checkBox.selectedProperty()
+                    // TODO: Add listener to checkBox.selectedProperty() to update status in Store
 
+                    // Content Layout
                     BorderPane centerLayout = new BorderPane();
+
+                    // Title
                     Label titleLabel = new Label(task.getTitle());
                     titleLabel.getStyleClass().add("list-title");
                     centerLayout.setTop(titleLabel);
 
+                    // Deadline
                     if (task.getDeadline() != null) {
                         Label deadlineLabel = new Label(formatter.format(task.getDeadline()));
                         deadlineLabel.getStyleClass().add("list-deadline");
                         centerLayout.setLeft(deadlineLabel);
+
                         FontIcon deadlineIcon = new FontIcon(CALENDAR2_X_FILL);
                         deadlineIcon.setIconSize(11);
                         deadlineIcon.setIconColor(Paint.valueOf("rgb(124, 124, 124)"));
                         deadlineLabel.setGraphic(deadlineIcon);
                     }
 
+                    // Spacer
                     Region spacer = new Region();
                     HBox.setHgrow(spacer, Priority.ALWAYS);
 
+                    // Arrow Icon
                     FontIcon arrowRight = new FontIcon(CHEVRON_RIGHT);
                     arrowRight.getStyleClass().add("list-arrow-right");
                     arrowRight.setIconSize(11);
@@ -96,6 +143,7 @@ public class UpcomingController {
 
                     setGraphic(rowLayout);
 
+                    // Interaction: Open Task Editor
                     setOnMouseClicked(event -> {
                         if (mainController != null) {
                             mainController.requestEditTaskEditor(task);
@@ -105,6 +153,11 @@ public class UpcomingController {
             }
         });
     }
+
+    /**
+     * Handler for the "Add Task" button.
+     * Requests the MainController to open the side panel for creating a new task.
+     */
     @FXML
     private void onAddTaskClicked() {
         if (mainController != null) {
