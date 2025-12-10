@@ -26,20 +26,6 @@
                 </right>
             </BorderPane>
 
-            <StackPane styleClass="sidebar-search">
-
-                <TextField fx:id="searchField" promptText="Search" styleClass="search-field"/>
-
-                <FontIcon iconLiteral="bi-search" iconSize="16" iconColor="#7c7c7cff">
-                    <StackPane.alignment>CENTER_LEFT</StackPane.alignment>
-
-                    <StackPane.margin>
-                        <Insets left="10"/>
-                    </StackPane.margin>
-                </FontIcon>
-
-            </StackPane>
-
 
             <Label text="TASKS" styleClass="section-header">
                 <VBox.margin>
@@ -62,27 +48,20 @@
                 <Label text="5" fx:id="todayCount" styleClass="label-count"/>
             </HBox>
 
-            <HBox fx:id="calendarButton" styleClass="sidebar-button-hbox" onMouseClicked="#onCalendarClicked">
-                <FontIcon iconLiteral="bi-calendar-event" iconSize="12" iconColor="#7c7c7c"/>
-                <Label text="Calendar"/>
-                <Region HBox.hgrow="ALWAYS"/>
-            </HBox>
-
             <HBox fx:id="groupsButton" styleClass="sidebar-button-hbox" onMouseClicked="#onGroupsClicked">
                 <FontIcon iconLiteral="bi-people-fill" iconSize="12" iconColor="#7c7c7c"/>
                 <Label text="Groups"/>
                 <Region HBox.hgrow="ALWAYS"/>
+                <Label text="5" fx:id="groupsCount" styleClass="label-count"/>
             </HBox>
-
-            <HBox fx:id="dashboardButton" styleClass="sidebar-button-hbox" onMouseClicked="#onDashboardClicked">
-                <FontIcon iconLiteral="bi-kanban" iconSize="12" iconColor="#7c7c7c"/>
-                <Label text="Dashboard"/>
-                <Region HBox.hgrow="ALWAYS"/>
-            </HBox>
-
 
             <Region VBox.vgrow="ALWAYS"/>
-
+            <Button onAction="#onNotificationsClick" styleClass="sidebar-button">
+                <graphic>
+                    <FontIcon iconLiteral="bi-bell-fill" iconSize="20"/>
+                </graphic>
+                <text>Notifications</text>
+            </Button>
             <Button fx:id="settingsButton" text="Settings" styleClass="sidebar-button" onAction="#onSettingsClicked"/>
             <Button fx:id="signOutButton" text="Sign out" styleClass="sidebar-button" onAction="#onSignOutClicked"/>
         </VBox>

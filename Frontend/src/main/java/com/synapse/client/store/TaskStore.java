@@ -12,6 +12,8 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 
 public class TaskStore {
     private static TaskStore instance;
@@ -68,6 +70,25 @@ public class TaskStore {
                 })
                 .exceptionally(e -> {
                     System.err.println("Failed to load tasks: " + e.getMessage());
+                    return null;
+                });
+    }
+
+    public void fetchTasksByGroupId(Long groupId) {
+        ApiService.getInstance().getAllTasks()
+                .thenAccept(downloadedTasks -> {
+                    if (downloadedTasks != null) {
+                        Platform.runLater(() -> {
+                            List<Task> newGroupTasks = Arrays.stream(downloadedTasks)
+                                    .filter(t -> groupId.equals(t.getGroup_id()))
+                                    .toList();
+                            this.tasks.removeIf(t -> groupId.equals(t.getGroup_id()));
+                            this.tasks.addAll(newGroupTasks);
+                        });
+                    }
+                })
+                .exceptionally(e -> {
+                    System.err.println("Failed to fetch tasks: " + e.getMessage());
                     return null;
                 });
     }

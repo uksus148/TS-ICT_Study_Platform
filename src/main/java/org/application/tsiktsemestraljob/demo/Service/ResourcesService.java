@@ -11,6 +11,7 @@ import org.application.tsiktsemestraljob.demo.Repository.StudyGroupsRepository;
 import org.application.tsiktsemestraljob.demo.Repository.UserRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class ResourcesService {
     private final ActivityLogsService activityLogsService;
     private final CurrentUser currentUser;
     private final MembershipService membershipService;
+    private final NotificationService notificationService;
 
     public List<Resources> getResourcesByGroup(Long groupId) {
         User user = currentUser.getCurrentUser();
@@ -40,6 +42,7 @@ public class ResourcesService {
         return resourcesRepository.findAll();
     }
 
+    @Transactional
     public Resources create(Long groupId, Resources resources) {
         User creator = currentUser.getCurrentUser();
         StudyGroups studyGroup = studyGroupsRepository.findById(groupId).orElseThrow(() -> new IllegalArgumentException("StudyGroup not found with id " + groupId));
@@ -47,6 +50,9 @@ public class ResourcesService {
         resources.setStudyGroup(studyGroup);
         resources.setUploadedBy(creator);
         Resources saved = resourcesRepository.save(resources);
+
+        notificationService.sendToGroup(groupId,
+                "New resource created: " + saved.getTitle());
 
         activityLogsService.log(creator,
                 "RESOURCE_CREATED",
@@ -59,6 +65,7 @@ public class ResourcesService {
                 .orElseThrow(() -> new IllegalArgumentException("Resource cannot be find"));
     }
 
+    @Transactional
     public Resources update(Long id, Resources resources) {
         User currentUserr = currentUser.getCurrentUser();
        Resources oldResources = resourcesRepository.findById(id).orElse(null);
@@ -73,12 +80,16 @@ public class ResourcesService {
            oldResources.setTitle(resources.getTitle());
            if(resources.getUploadedAt() != null) {oldResources.setUploadedAt(resources.getUploadedAt());}
 
+        notificationService.sendToGroup(resources.getStudyGroup().getGroupId(),
+                "Resource updated: " + resources.getTitle());
+
            activityLogsService.log(currentUserr,
                    "UPDATE_RESOURCE"
            , "RESOURCE-ID: " + oldResources.getId());
            return resourcesRepository.save(oldResources);
     }
 
+    @Transactional
     public void delete(Long id) {
         User currentUserr = currentUser.getCurrentUser();
         Resources resources = findById(id);
@@ -86,6 +97,9 @@ public class ResourcesService {
         if(!resources.getUploadedBy().equals(currentUserr)) {
             throw new AccessDeniedException("You are not owner of this resource");
         }
+
+        notificationService.sendToGroup(resources.getStudyGroup().getGroupId(),
+                "Resource deleted: " + resources.getTitle());
 
         activityLogsService.log(currentUserr,
                 "DELETE_RESOURCES"

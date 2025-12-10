@@ -17,7 +17,7 @@
             prefHeight="600.0" prefWidth="800.0">
 
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="15">
+        <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-padding: 10;">
             <Button onAction="#onBack" styleClass="btn-secondary">
                 <graphic>
                     <FontIcon iconLiteral="bi-arrow-left" iconSize="20"/>
@@ -56,9 +56,15 @@
 
             <Tab text="Members">
                 <graphic><FontIcon iconLiteral="bi-people-fill"/></graphic>
-                <ListView fx:id="membersListView" style="-fx-padding: 10;"/>
+                <VBox spacing="10" style="-fx-padding: 15;">
+                    <HBox alignment="CENTER_RIGHT">
+                        <Button text="Invite Member" onAction="#onInviteMember" style="-fx-background-color: #198754; -fx-text-fill: white;">
+                            <graphic><FontIcon iconLiteral="bi-person-plus-fill" iconColor="white"/></graphic>
+                        </Button>
+                    </HBox>
+                    <ListView fx:id="membersListView" VBox.vgrow="ALWAYS"/>
+                </VBox>
             </Tab>
-
             <Tab text="Analytics">
                 <graphic><FontIcon iconLiteral="bi-pie-chart-fill"/></graphic>
                 <VBox alignment="CENTER" spacing="20">

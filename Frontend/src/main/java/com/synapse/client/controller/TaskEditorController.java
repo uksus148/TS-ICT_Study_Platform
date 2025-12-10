@@ -3,15 +3,13 @@ package com.synapse.client.controller;
 import com.synapse.client.UserSession;
 import com.synapse.client.model.Group;
 import com.synapse.client.model.Task;
-import com.synapse.client.TaskStatus;
+import com.synapse.client.enums.TaskStatus;
 import com.synapse.client.service.AlertService;
 import com.synapse.client.store.GroupsStore;
 import com.synapse.client.store.TaskStore;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-
-import java.time.LocalDateTime;
 
 public class TaskEditorController {
     private Task task;

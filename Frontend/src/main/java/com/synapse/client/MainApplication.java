@@ -2,6 +2,7 @@ package com.synapse.client;
 
 import com.synapse.client.controller.AuthController;
 import com.synapse.client.controller.MainController;
+import com.synapse.client.service.StompClient;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -14,6 +15,7 @@ import java.net.URL;
 public class MainApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
+        StompClient.getInstance().connect();
         FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("views/auth/auth_view.fxml"));
         Parent root = fxmlLoader.load();
 

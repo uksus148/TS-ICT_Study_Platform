@@ -233,17 +233,6 @@ public class ApiService {
                 });
     }
 
-    public CompletableFuture<User> updateUser(User user) {
-        String json = gson.toJson(user);
-
-        HttpRequest request = newRequestBuilder("/api/users/" + user.getUser_id())
-                .header("Content-Type", "application/json")
-                .PUT(HttpRequest.BodyPublishers.ofString(json))
-                .build();
-
-        return sendRequest(request, User.class);
-    }
-
     private <T> CompletableFuture<T> sendRequest(HttpRequest request, Class<T> responseType) {
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {

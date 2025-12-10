@@ -1,4 +1,4 @@
-module com.synapse.client { // Желательно переименовать модуль так, чтобы он совпадал с пакетом
+module com.synapse.client {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.web;
@@ -26,4 +26,6 @@ module com.synapse.client { // Желательно переименовать �
     exports com.synapse.client.model;
     opens com.synapse.client.model to javafx.fxml, com.google.gson;
     opens com.synapse.client.model.dto to com.google.gson;
+    exports com.synapse.client.enums;
+    opens com.synapse.client.enums to javafx.fxml;
 }
