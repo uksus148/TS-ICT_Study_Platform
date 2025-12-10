@@ -238,6 +238,17 @@ public class ApiService {
                 });
     }
 
+    public CompletableFuture<User> updateUser(User user) {
+        String json = gson.toJson(user);
+
+        HttpRequest request = newRequestBuilder("/api/users/" + user.getUser_id())
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        return sendRequest(request, User.class);
+    }
+
     // --- INVITATIONS (NEW) ---
 
     public CompletableFuture<InviteCreateResponseDTO> createInvitation(Long groupId) {
@@ -267,11 +278,9 @@ public class ApiService {
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {
                     if (response.statusCode() >= 300) {
-                        // Можно добавить логирование ошибки здесь
                         System.err.println("Request failed: " + response.statusCode() + " | Body: " + response.body());
                         return null;
                     }
-                    // Если ожидаемый тип Void, возвращаем null без попытки парсинга JSON
                     if (responseType == Void.class) {
                         return null;
                     }
