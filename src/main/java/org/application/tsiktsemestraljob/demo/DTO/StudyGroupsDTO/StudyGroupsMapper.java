@@ -1,7 +1,10 @@
 package org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO;
 
+import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
-
+import org.application.tsiktsemestraljob.demo.Entities.User;
+import org.application.tsiktsemestraljob.demo.Repository.UserRepository;
+@RequiredArgsConstructor
 public class StudyGroupsMapper {
     public static StudyGroups toEntity(StudyGroupsRequestDTO dto) {
         StudyGroups studyGroup = new StudyGroups();
@@ -16,7 +19,8 @@ public class StudyGroupsMapper {
                 studyGroups.getName(),
                 studyGroups.getDescription(),
                 studyGroups.getCreatedBy().getId(),
-                studyGroups.getCreatedAt()
+                studyGroups.getCreatedAt(),
+                studyGroups.getCreatedBy().getName()
         );
     }
 }
