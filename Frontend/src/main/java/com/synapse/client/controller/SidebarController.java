@@ -71,16 +71,6 @@ public class SidebarController {
     }
 
     @FXML
-    private void onCalendarClicked() {
-        System.out.println("Click on 'Calendar' (Not implemented)");
-    }
-
-    @FXML
-    private void onDashboardClicked() {
-        System.out.println("Click on 'Dashboard' (Not implemented)");
-    }
-
-    @FXML
     private void onSidebarToggle() {
         boolean isSidebarVisible = sidebar.isVisible();
 
@@ -94,6 +84,12 @@ public class SidebarController {
             sidebarRootPane.setPrefWidth(Region.USE_COMPUTED_SIZE);
         } else {
             sidebarRootPane.setPrefWidth(SIDEBAR_WIDTH);
+        }
+    }
+    @FXML
+    public void onNotificationsClick() {
+        if (mainController != null) {
+            mainController.showNotificationsView();
         }
     }
 }
