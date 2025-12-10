@@ -2,7 +2,7 @@ package com.synapse.client.service;
 
 import com.google.gson.*;
 import com.synapse.client.model.*;
-import com.synapse.client.model.dto.*; // Импортируем все DTO (включая новые инвайты)
+import com.synapse.client.model.dto.*;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -262,31 +262,6 @@ public class ApiService {
                 .build();
         return sendRequest(request, InviteValidateDTO.class);
     }
-
-    // --- GROUP REQUESTS (OLD LOGIC - KEEP IF NEEDED) ---
-
-    public CompletableFuture<GroupRequest[]> getMyRequests() {
-        HttpRequest request = newRequestBuilder("/api/requests/my")
-                .GET()
-                .build();
-        return sendRequest(request, GroupRequest[].class);
-    }
-
-    public CompletableFuture<Void> respondToRequest(Long requestId, boolean accept) {
-        String action = accept ? "accept" : "reject";
-        HttpRequest request = newRequestBuilder("/api/requests/" + requestId + "/" + action)
-                .POST(HttpRequest.BodyPublishers.noBody())
-                .build();
-
-        return client.sendAsync(request, HttpResponse.BodyHandlers.discarding())
-                .thenAccept(response -> {
-                    if (response.statusCode() >= 300) {
-                        throw new RuntimeException("Action failed: " + response.statusCode());
-                    }
-                });
-    }
-
-    // --- HELPER METHODS ---
 
     private <T> CompletableFuture<T> sendRequest(HttpRequest request, Class<T> responseType) {
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
