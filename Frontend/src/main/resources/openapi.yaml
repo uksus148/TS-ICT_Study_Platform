@@ -1,0 +1,436 @@
+openapi: 3.0.3
+info:
+  title: TS-ICT Study Platform — Frontend-used API
+  version: 1.0.0
+  description: |
+    OpenAPI specification documenting only the endpoints used by the Frontend module.
+    Authentication is cookie-based; after successful login/register the server sets a session cookie (e.g. `JSESSIONID`).
+
+servers:
+  - url: http://localhost:8080
+    description: Local backend server
+
+tags:
+  - name: Auth
+  - name: StudyGroups
+  - name: Tasks
+  - name: Resources
+  - name: Members
+  - name: Users
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Logged in successfully; session cookie is set in response
+          headers:
+            Set-Cookie:
+              description: Session cookie (e.g. `JSESSIONID=...; Path=/; HttpOnly`)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401': { description: Invalid credentials }
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: Registered successfully; session cookie may be set in response
+          headers:
+            Set-Cookie:
+              description: Session cookie (if automatically logged in)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400': { description: Validation error }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout current session
+      security:
+        - cookieAuth: []
+      responses:
+        '200': { description: Logged out }
+        '204': { description: Logged out (no content) }
+
+  /api/studyGroups:
+    get:
+      tags: [StudyGroups]
+      summary: Get all study groups
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Group'
+
+  /api/studyGroups/{userId}:
+    post:
+      tags: [StudyGroups]
+      summary: Create a group on behalf of a user
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Group'
+      responses:
+        '200':
+          description: Created group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+
+  /api/studyGroups/{groupId}:
+    put:
+      tags: [StudyGroups]
+      summary: Update a group
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Group'
+      responses:
+        '200':
+          description: Updated group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+    delete:
+      tags: [StudyGroups]
+      summary: Delete a group
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '204': { description: Deleted }
+
+  /api/studyGroups/{groupId}/members:
+    get:
+      tags: [Members]
+      summary: Get group members
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: Group members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+  /api/tasks:
+    get:
+      tags: [Tasks]
+      summary: Get all tasks
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+
+  /api/tasks/{groupId}:
+    post:
+      tags: [Tasks]
+      summary: Create a task for a group
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '200':
+          description: Created task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+
+  /api/tasks/{taskId}:
+    put:
+      tags: [Tasks]
+      summary: Update a task
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '200':
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+    delete:
+      tags: [Tasks]
+      summary: Delete a task
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '204': { description: Deleted }
+
+  /api/resources/group/{groupId}:
+    get:
+      tags: [Resources]
+      summary: Get resources of a group
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: Group resources
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Resource'
+
+  /api/resources/{groupId}:
+    post:
+      tags: [Resources]
+      summary: Create a resource in a group
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Resource'
+      responses:
+        '200':
+          description: Created resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+
+  /api/users/{userId}:
+    put:
+      tags: [Users]
+      summary: Update a user
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
+
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+      required: [email, password]
+
+    RegisterRequest:
+      type: object
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+      required: [name, email, password]
+
+    User:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int64
+          description: Primary key
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          description: May be omitted in responses
+        role:
+          $ref: '#/components/schemas/MembershipRole'
+
+    Group:
+      type: object
+      properties:
+        groupId:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        created_by:
+          type: integer
+          format: int64
+
+    Task:
+      type: object
+      properties:
+        task_id:
+          type: integer
+          format: int64
+        group_id:
+          type: integer
+          format: int64
+        created_by:
+          type: integer
+          format: int64
+        title:
+          type: string
+        description:
+          type: string
+        deadline:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+
+    Resource:
+      type: object
+      properties:
+        resource_id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        type:
+          type: string
+          description: Resource type (e.g., file, link)
+        path:
+          type: string
+          description: Path or URL to the resource
+        group_id:
+          type: integer
+          format: int64
+        created_by:
+          type: integer
+          format: int64
+
+    TaskStatus:
+      type: string
+      enum: [IN_PROGRESS, CANCELED, COMPLETED]
+
+    MembershipRole:
+      type: string
+      enum: [OWNER, MEMBER]
+
+security:
+  - cookieAuth: []
