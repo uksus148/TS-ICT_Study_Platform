@@ -10,6 +10,7 @@ import org.application.tsiktsemestraljob.demo.DTO.StudyGroupsDTO.StudyGroupsResp
 import org.application.tsiktsemestraljob.demo.Entities.StudyGroups;
 import org.application.tsiktsemestraljob.demo.Service.MembershipService;
 import org.application.tsiktsemestraljob.demo.Service.StudyGroupsService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,19 @@ import java.util.List;
 public class StudyGroupsController {
     private final StudyGroupsService studyGroupsService;
     private final MembershipService membershipService;
+
+    @Operation(
+            summary = "Delete Member",
+            description = "This endpoint is for delete member from group, uses memberShip Service"
+    )
+    @DeleteMapping("/{groupId}/members/{memberId}")
+    public ResponseEntity<String> removeMember(
+            @PathVariable Long groupId,
+            @PathVariable Long memberId
+    ) {
+        membershipService.removeMember(groupId, memberId);
+        return ResponseEntity.ok("Member removed");
+    }
 
     @Operation(
             summary = "GetGroupMembers",
@@ -99,5 +113,13 @@ public class StudyGroupsController {
     public StudyGroupsResponseDTO update(@PathVariable Long id, @RequestBody StudyGroupsRequestDTO dto) {
          StudyGroups studyGroup = studyGroupsService.updateStudyGroups(id, StudyGroupsMapper.toEntity(dto));
          return StudyGroupsMapper.toDto(studyGroup);
+    }
+
+    @GetMapping("/my-groups")
+    public List<StudyGroupsResponseDTO> getMyGroups() {
+        List<StudyGroups> groups = membershipService.getUserGroups();
+        return groups.stream()
+                .map(StudyGroupsMapper::toDto)
+                .toList();
     }
 }
