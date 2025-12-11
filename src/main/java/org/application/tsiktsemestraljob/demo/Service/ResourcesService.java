@@ -28,9 +28,6 @@ public class ResourcesService {
     public List<Resources> getResourcesByGroup(Long groupId) {
         User user = currentUser.getCurrentUser();
 
-        StudyGroups group = studyGroupsRepository.findById(groupId)
-                .orElseThrow(() -> new EntityNotFoundException("Group not found"));
-
         if (!membershipService.isMember(user.getId(), groupId)) {
             throw new AccessDeniedException("You are not a member of this group");
         }

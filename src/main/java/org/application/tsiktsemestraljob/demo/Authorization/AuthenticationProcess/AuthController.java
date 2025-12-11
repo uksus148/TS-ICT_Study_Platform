@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthenticationManager authManager;
-    private final UserService userService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
