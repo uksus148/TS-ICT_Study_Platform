@@ -2,7 +2,7 @@ package org.application.tsiktsemestraljob.demo.Authorization.AuthenticationProce
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse; // <--- ВАЖНО: Добавлен Response
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.application.tsiktsemestraljob.demo.DTO.Authentication.LoginDTO;
 import org.application.tsiktsemestraljob.demo.DTO.Authentication.RegisterDTO;
@@ -14,7 +14,7 @@ import org.application.tsiktsemestraljob.demo.Service.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext; // <--- ИСПРАВЛЕНО (была опечатка)
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
