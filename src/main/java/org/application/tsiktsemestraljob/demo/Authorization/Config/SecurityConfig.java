@@ -24,7 +24,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Swagger
+    
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
@@ -33,14 +33,14 @@ public class SecurityConfig {
                                 "/v3/api-docs.json"
                         ).permitAll()
 
-                        // Auth
+                    
                         .requestMatchers("/auth/**").permitAll()
 
-                        // WebSocket
+                        
                         .requestMatchers("/ws/**", "/ws").permitAll()
                         .requestMatchers("/topic/**", "/queue/**").permitAll()
 
-                        // The rest
+                        
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
@@ -49,10 +49,10 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
 
-                // ❗ These headers block Swagger UI, must disable
+                
                 .headers(headers -> headers
-                        .frameOptions(frame -> frame.disable())       // Allow HTML/iframes
-                        .contentTypeOptions(ctype -> ctype.disable()) // Prevent "download instead of view"
+                        .frameOptions(frame -> frame.disable())       
+                        .contentTypeOptions(ctype -> ctype.disable()) 
                 );
 
         return http.build();
